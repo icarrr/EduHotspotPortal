@@ -233,6 +233,7 @@
             border-radius: 0.375rem;
             padding: 0.375rem 0.75rem;
             font-weight: 500;
+            --bs-badge-color: #151515 !important;
         }
 
         /* Alerts */
@@ -324,7 +325,7 @@
 
             {% if current_user.has_role('admin_it', 'operator') %}
             <div class="sidebar-item">
-                <a href="{{ url_for('users.index') }}" class="sidebar-link {% if 'users' in request.endpoint %}active{% endif %}">
+                <a href="{{ url_for('users.index') }}" class="sidebar-link {% if request.endpoint and 'users' in request.endpoint %}active{% endif %}">
                     <i class="ti ti-users"></i>
                     <span>User Management</span>
                 </a>
@@ -358,7 +359,7 @@
             </div>
 
             <div class="sidebar-item">
-                <a href="{{ url_for('settings.index') }}" class="sidebar-link {% if 'settings' in request.endpoint %}active{% endif %}">
+                <a href="{{ url_for('settings.index') }}" class="sidebar-link {% if request.endpoint and 'settings' in request.endpoint %}active{% endif %}">
                     <i class="ti ti-settings"></i>
                     <span>Settings</span>
                 </a>
