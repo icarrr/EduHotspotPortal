@@ -1,0 +1,56 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Operator Management - EduHotspotPortal{% endblock %}
+{% block page_title %}Operator Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">System Operators</h3>
+        <div class="card-tools">
+            <a href="#" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add Operator
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for op in operators %}
+                <tr>
+                    <td>{{ op.username }}</td>
+                    <td>{{ op.name or '-' }}</td>
+                    <td><span class="badge badge-primary">{{ op.role|title }}</span></td>
+                    <td>
+                        {% if op.is_active %}
+                            <span class="badge badge-success">Active</span>
+                        {% else %}
+                            <span class="badge badge-danger">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ op.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <a href="#" class="btn btn-xs btn-info"><i class="fas fa-edit"></i></a>
+                        <a href="#" class="btn btn-xs btn-danger"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No operators yet</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

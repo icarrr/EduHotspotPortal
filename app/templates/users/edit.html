@@ -1,0 +1,32 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Edit User - EduHotspotPortal{% endblock %}
+{% block page_title %}Edit Hotspot User{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Edit User: {{ user.name }}</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" class="form-control" value="{{ user.name }}" disabled>
+            </div>
+            <div class="form-group">
+                <label>Profile</label>
+                <input type="text" class="form-control" name="profile" value="{{ user.profile or '' }}">
+            </div>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" name="enabled" {% if user.disabled != 'true' %}checked{% endif %}>
+                <label class="form-check-label">Enabled</label>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{{ url_for('users.index') }}" class="btn btn-default">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

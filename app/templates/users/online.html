@@ -1,0 +1,44 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Online Sessions - EduHotspotPortal{% endblock %}
+{% block page_title %}Online Sessions{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Currently Online Users</h3>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>IP Address</th>
+                    <th>MAC Address</th>
+                    <th>Login Time</th>
+                    <th>Duration</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in sessions %}
+                <tr>
+                    <td>{{ session.username }}</td>
+                    <td>{{ session.ip }}</td>
+                    <td>{{ session.mac }}</td>
+                    <td>{{ session.login_time }}</td>
+                    <td>{{ session.duration }}</td>
+                    <td>
+                        <a href="#" class="btn btn-xs btn-danger"><i class="fas fa-sign-out-alt"></i> Disconnect</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No users online</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

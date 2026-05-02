@@ -1,0 +1,86 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Import Users - EduHotspotPortal{% endblock %}
+{% block page_title %}Import Users from CSV{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Import Hotspot Users</h3>
+    </div>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="card-body">
+            <div class="form-group">
+                <label>XLSX File</label>
+                <div class="input-group">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" name="xlsx_file" accept=".xlsx" required>
+                        <label class="custom-file-label">Choose file</label>
+                    </div>
+                </div>
+                <small class="form-text text-muted">
+                    Format: username, nama, role (in first sheet)<br>
+                    Roles: admin, guru, siswa, trial<br>
+                    Passwords will be auto-generated
+                </small>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">XLSX Format Example</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>username</th>
+                                <th>nama</th>
+                                <th>role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>12345</td>
+                                <td>Budi Santoso</td>
+                                <td>siswa</td>
+                            </tr>
+                            <tr>
+                                <td>67890</td>
+                                <td>Siti Nurhaliza</td>
+                                <td>guru</td>
+                            </tr>
+                            <tr>
+                                <td>11111</td>
+                                <td>Admin User</td>
+                                <td>admin</td>
+                            </tr>
+                            <tr>
+                                <td>22222</td>
+                                <td>Trial User</td>
+                                <td>trial</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <a href="{{ url_for('users.download_template') }}" class="btn btn-sm btn-info">
+                        <i class="fas fa-download"></i> Download XLSX Template
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-file-import"></i> Import Users
+            </button>
+            <a href="{{ url_for('users.index') }}" class="btn btn-default">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.querySelector('.custom-file-input').addEventListener('change', function(e) {
+    var fileName = e.target.files[0].name;
+    var label = e.target.nextElementSibling;
+    label.innerHTML = fileName;
+});
+</script>
+{% endblock %}

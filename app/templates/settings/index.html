@@ -1,0 +1,159 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Settings - EduHotspotPortal{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">MikroTik Connection Settings</h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-sm btn-info" onclick="testConnection()">
+                    <i class="fas fa-plug"></i> Test Connection
+                </button>
+                <a href="{{ url_for('settings.init_profiles') }}" class="btn btn-sm btn-success">
+                    <i class="fas fa-cogs"></i> Init Default Profiles
+                </a>
+            </div>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="form-group">
+                <label>Host IP</label>
+                <input type="text" class="form-control" name="mikrotik_host"
+                       value="{{ settings.mikrotik_host or '192.168.1.1' }}">
+            </div>
+            <div class="form-group">
+                <label>Port</label>
+                <input type="number" class="form-control" name="mikrotik_port"
+                       value="{{ settings.mikrotik_port or '8728' }}">
+            </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" class="form-control" name="mikrotik_user"
+                       value="{{ settings.mikrotik_user or 'apiuser' }}">
+            </div>
+            <div class="form-group">
+                <label>Password (leave blank to keep current)</label>
+                <input type="password" class="form-control" name="mikrotik_password">
+            </div>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" name="mikrotik_use_ssl"
+                       {% if settings.mikrotik_use_ssl == 'true' %}checked{% endif %}>
+                <label class="form-check-label">Use SSL (Port 8729)</label>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Role-Profile Mapping</h3>
+    </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Role</th>
+                        <th>MikroTik Profile</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rp in role_profiles %}
+                    <tr>
+                        <td><span class="badge badge-primary">{{ rp.role|title }}</span></td>
+                        <td><code>{{ rp.profile_name }}</code></td>
+                        <td>{{ rp.description or '-' }}</td>
+                        <td>
+                            <a href="#" class="btn btn-xs btn-info" onclick="editMapping({{ rp.id }}, '{{ rp.role }}', '{{ rp.profile_name }}', '{{ rp.description or '' }}')">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('settings.delete_role_profile', id=rp.id) }}"
+                               class="btn btn-xs btn-danger"
+                               onclick="return confirm('Delete this mapping?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">
+                            No mappings yet. Click "Add Mapping" or "Init Default Profiles" to start.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#addRoleProfileModal">
+                <i class="fas fa-plus"></i> Add Mapping
+            </button>
+        </div>
+</div>
+
+<!-- Add/Edit Mapping Modal -->
+<div class="modal fade" id="addRoleProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('settings.add_role_profile') }}">
+                <div class="modal-header">
+                    <h4 class="modal-title">Add/Edit Role-Profile Mapping</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="mapping_id" name="id" value="">
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select class="form-control" name="role" required>
+                            <option value="admin">Admin</option>
+                            <option value="guru">Guru</option>
+                            <option value="siswa">Siswa</option>
+                            <option value="trial">Trial</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>MikroTik Profile Name</label>
+                        <input type="text" class="form-control" name="profile_name"
+                               placeholder="e.g., admin, guru, siswa" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" class="form-control" name="description"
+                               placeholder="Optional description">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function testConnection() {
+    fetch('{{ url_for("settings.test_connection") }}')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert('Connection successful!');
+            } else {
+                alert('Connection failed: ' + data.message);
+            }
+        });
+}
+
+function editMapping(id, role, profile_name, description) {
+    document.querySelector('[name="id"]').value = id;
+    document.querySelector('[name="role"]').value = role;
+    document.querySelector('[name="profile_name"]').value = profile_name;
+    document.querySelector('[name="description"]').value = description;
+    $('#addRoleProfileModal').modal('show');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Not Found - EduHotspotPortal{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <h2 class="headline text-warning">404</h2>
+    <div class="error-content">
+        <h3><i class="fas fa-exclamation-triangle text-warning"></i> Page Not Found</h3>
+        <p>The page you requested could not be found.</p>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+            <i class="fas fa-home"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

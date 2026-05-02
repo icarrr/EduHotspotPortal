@@ -1,0 +1,11 @@
+body {
+    font-size: 14px;
+}
+
+.content-wrapper {
+    min-height: calc(100vh - 112px);
+}
+
+.small-box h3 {
+    font-size: 28px;
+}

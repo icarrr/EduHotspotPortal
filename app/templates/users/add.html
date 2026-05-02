@@ -1,0 +1,41 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Add User - EduHotspotPortal{% endblock %}
+{% block page_title %}Add Hotspot User{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Add New Hotspot User</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" class="form-control" name="username" required>
+            </div>
+            <div class="form-group">
+                <label>Password (leave empty to auto-generate)</label>
+                <input type="text" class="form-control" name="password">
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <select class="form-control" name="role">
+                    <option value="siswa">Siswa</option>
+                    <option value="guru">Guru</option>
+                    <option value="admin">Admin</option>
+                    <option value="trial">Trial</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Profile (MikroTik)</label>
+                <input type="text" class="form-control" name="profile" placeholder="hotspot-siswa">
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Add User</button>
+            <a href="{{ url_for('users.index') }}" class="btn btn-default">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

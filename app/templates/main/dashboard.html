@@ -1,0 +1,90 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dashboard - EduHotspotPortal{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ total_users or 0 }}</h3>
+                <p>Total Users</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <a href="{{ url_for('users.index') }}" class="small-box-footer">
+                Manage Users <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ online_users or 0 }}</h3>
+                <p>Online Users</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-wifi"></i>
+            </div>
+            <a href="{{ url_for('users.online_sessions') }}" class="small-box-footer">
+                View Sessions <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ disabled_users or 0 }}</h3>
+                <p>Disabled Users</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-user-slash"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>{{ new_today or 0 }}</h3>
+                <p>New Today</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Quick Actions</h3>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('users.add') }}" class="btn btn-primary btn-lg btn-block mb-2">
+                    <i class="fas fa-user-plus"></i> Add New User
+                </a>
+                <a href="{{ url_for('users.online_sessions') }}" class="btn btn-info btn-lg btn-block">
+                    <i class="fas fa-wifi"></i> View Online Sessions
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">System Status</h3>
+            </div>
+            <div class="card-body">
+                <p><i class="fas fa-circle text-success"></i> MikroTik API: Connected</p>
+                <p><i class="fas fa-circle text-success"></i> Database: Active</p>
+                <p><i class="fas fa-users"></i> Total Hotspot Users: {{ total_users or 0 }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
