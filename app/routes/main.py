@@ -12,19 +12,26 @@ bp = Blueprint('main', __name__)
 @login_required
 def dashboard():
     mikrotik = get_mikrotik_client()
+    mikrotik_connected = mikrotik.connect()
 
-    # Get data from MikroTik
-    hotspot_users = mikrotik.get_hotspot_users()
-    active_sessions = mikrotik.get_active_sessions()
+    # Get data from MikroTik (only if connected)
+    total_users = 0
+    online_users = 0
+    disabled_users = 0
 
-    total_users = len(hotspot_users)
-    online_users = len(active_sessions)
+    if mikrotik_connected:
+        hotspot_users = mikrotik.get_hotspot_users()
+        active_sessions = mikrotik.get_active_sessions()
 
-    # Count disabled users from MikroTik data
-    disabled_users = sum(1 for u in hotspot_users if u.get('disabled') == 'true')
+        total_users = len(hotspot_users)
+        online_users = len(active_sessions)
 
-    # Sync users to local DB for tracking (creation dates, etc.)
-    sync_users_to_db(hotspot_users)
+        # Count disabled users from MikroTik data
+        disabled_users = sum(1 for u in hotspot_users if u.get('disabled') == 'true')
+
+        # Sync users to local DB for tracking (creation dates, etc.)
+        sync_users_to_db(hotspot_users)
+        mikrotik.disconnect()
 
     # New users today (from local DB)
     new_today = HotspotUser.query.filter(
@@ -35,7 +42,8 @@ def dashboard():
                            total_users=total_users,
                            online_users=online_users,
                            disabled_users=disabled_users,
-                           new_today=new_today)
+                           new_today=new_today,
+                           mikrotik_connected=mikrotik_connected)
 
 
 def sync_users_to_db(mikrotik_users):

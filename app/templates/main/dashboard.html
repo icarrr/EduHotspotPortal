@@ -99,10 +99,15 @@
                 <div class="mb-3">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span><i class="ti ti-router me-2"></i>MikroTik API</span>
+                        {% if mikrotik_connected %}
                         <span class="badge bg-success">Connected</span>
+                        {% else %}
+                        <span class="badge bg-danger">Disconnected</span>
+                        {% endif %}
                     </div>
                     <div class="progress" style="height: 4px;">
-                        <div class="progress-bar bg-success" style="width: 100%"></div>
+                        <div class="progress-bar {% if mikrotik_connected %}bg-success{% else %}bg-danger{% endif %}" 
+                             style="width: {% if mikrotik_connected %}100{% else %}0{% endif %}%"></div>
                     </div>
                 </div>
 
