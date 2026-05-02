@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Expiration Settings - EduHotspotPortal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card card-warning">
+                <div class="card-header">
+                    <h3 class="card-title">Auto-Expiration Settings</h3>
+                </div>
+                <form method="POST">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="auto_expire_enabled"
+                                       name="auto_expire_enabled" {% if auto_expire_enabled %}checked{% endif %}>
+                                <label class="custom-control-label" for="auto_expire_enabled">
+                                    Enable Auto-Expiration
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">Automatically disable users when their expiration date passes</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="default_expiration_days">Default Expiration (days)</label>
+                            <input type="number" class="form-control" id="default_expiration_days"
+                                   name="default_expiration_days" value="{{ default_expiration_days }}"
+                                   min="1" max="365">
+                            <small class="form-text text-muted">Default number of days before newly created users expire</small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h5><i class="icon fas fa-info"></i> How it works</h5>
+                            <p>To automatically expire users:</p>
+                            <ol>
+                                <li>Enable auto-expiration above</li>
+                                <li>Set expiration dates for users via "Set Expiration" button</li>
+                                <li>Run the expire_users.py script periodically (e.g., cron job every hour):
+                                    <code>python expire_users.py</code>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-warning">Save Settings</button>
+                        <a href="{{ url_for('settings.index') }}" class="btn btn-default">Back</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

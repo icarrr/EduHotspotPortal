@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Bind MAC Address - EduHotspotPortal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Bind MAC Address to {{ username }}</h3>
+                </div>
+                <form method="POST">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="mac_address">MAC Address</label>
+                            <input type="text" class="form-control" id="mac_address" name="mac_address"
+                                   placeholder="AA:BB:CC:DD:EE:FF" value="{{ current_mac or '' }}"
+                                   pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$" required>
+                            <small class="form-text text-muted">Format: AA:BB:CC:DD:EE:FF (colon or dash separated)</small>
+                        </div>
+                        {% if current_mac %}
+                        <div class="alert alert-info">
+                            Currently bound to: <strong>{{ current_mac }}</strong>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">Bind MAC Address</button>
+                        <a href="{{ url_for('users.index') }}" class="btn btn-default">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

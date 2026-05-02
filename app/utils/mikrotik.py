@@ -148,6 +148,51 @@ class MikroTikClient:
             current_app.logger.error(f'Failed to get profiles: {e}')
             return []
 
+    def bind_mac_to_user(self, username, mac_address):
+        """Bind MAC address to hotspot user for device binding"""
+        if not self.connection:
+            if not self.connect():
+                return False, 'Connection failed'
+        try:
+            users = self.connection.path('ip', 'hotspot', 'user')
+            user = users.get(name=username)
+            if user:
+                users.update(id=user[0]['.id'], mac_address=mac_address)
+                return True, 'MAC address bound successfully'
+            return False, 'User not found'
+        except (LibRouterosError, ConnectionClosed) as e:
+            return False, str(e)
+
+    def unbind_mac_from_user(self, username):
+        """Remove MAC address binding from hotspot user"""
+        if not self.connection:
+            if not self.connect():
+                return False, 'Connection failed'
+        try:
+            users = self.connection.path('ip', 'hotspot', 'user')
+            user = users.get(name=username)
+            if user:
+                users.update(id=user[0]['.id'], mac_address='')
+                return True, 'MAC address unbound successfully'
+            return False, 'User not found'
+        except (LibRouterosError, ConnectionClosed) as e:
+            return False, str(e)
+
+    def get_user_mac_binding(self, username):
+        """Get MAC address binding for a user"""
+        if not self.connection:
+            if not self.connect():
+                return None
+        try:
+            users = self.connection.path('ip', 'hotspot', 'user')
+            user = users.get(name=username)
+            if user and user[0].get('mac_address'):
+                return user[0]['mac_address']
+            return None
+        except (LibRouterosError, ConnectionClosed) as e:
+            current_app.logger.error(f'Failed to get user MAC binding: {e}')
+            return None
+
 
 def get_mikrotik_client():
     return MikroTikClient()

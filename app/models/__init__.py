@@ -50,6 +50,8 @@ class HotspotUser(db.Model):
     role = db.Column(db.String(20))
     profile = db.Column(db.String(50))
     status = db.Column(db.String(20), default='active')
+    mac_address = db.Column(db.String(17))  # Format: AA:BB:CC:DD:EE:FF
+    expires_at = db.Column(db.DateTime)  # Auto-expire date
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_sync = db.Column(db.DateTime)
 

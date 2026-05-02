@@ -109,8 +109,48 @@ def init_profiles():
 @login_required
 @admin_required
 def delete_role_profile(id):
-    rp = RoleProfile.query.get_or_404(id)
-    db.session.delete(rp)
+    profile = RoleProfile.query.get_or_404(id)
+    db.session.delete(profile)
     db.session.commit()
-    flash('Role-profile mapping deleted', 'success')
+    flash('Role profile mapping deleted', 'success')
     return redirect(url_for('settings.index'))
+
+
+@bp.route('/expiration-settings', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def expiration_settings():
+    """Configure automatic expiration settings"""
+    from flask import current_app
+
+    if request.method == 'POST':
+        default_expiration_days = request.form.get('default_expiration_days', '')
+        auto_expire_enabled = 'true' if request.form.get('auto_expire_enabled') else 'false'
+
+        # Save settings
+        settings_to_save = {
+            'default_expiration_days': default_expiration_days,
+            'auto_expire_enabled': auto_expire_enabled
+        }
+
+        for key, value in settings_to_save.items():
+            setting = Setting.query.filter_by(key=key).first()
+            if setting:
+                setting.value = value
+            else:
+                setting = Setting(key=key, value=value,
+                                description='Auto-expiration settings')
+                db.session.add(setting)
+
+        db.session.commit()
+        flash('Expiration settings updated', 'success')
+        return redirect(url_for('settings.expiration_settings'))
+
+    # Get current settings
+    settings = {s.key: s.value for s in Setting.query.all()}
+    default_expiration_days = settings.get('default_expiration_days', '30')
+    auto_expire_enabled = settings.get('auto_expire_enabled', 'false') == 'true'
+
+    return render_template('settings/expiration.html',
+                         default_expiration_days=default_expiration_days,
+                         auto_expire_enabled=auto_expire_enabled)

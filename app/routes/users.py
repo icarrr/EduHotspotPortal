@@ -304,5 +304,112 @@ def download_passwords():
     return response
 
 
+@bp.route('/bind-mac/<username>', methods=['GET', 'POST'])
+@login_required
+@operator_required
+def bind_mac(username):
+    """Bind MAC address to user for device binding"""
+    from app.models import HotspotUser
+
+    # Get or create local user record
+    local_user = HotspotUser.query.filter_by(username=username).first()
+    if not local_user:
+        local_user = HotspotUser(username=username)
+        db.session.add(local_user)
+
+    if request.method == 'POST':
+        mac_address = request.form.get('mac_address', '').strip().upper()
+
+        # Validate MAC address format
+        import re
+        mac_pattern = re.compile(r'^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$')
+        if not mac_pattern.match(mac_address):
+            flash('Invalid MAC address format. Use AA:BB:CC:DD:EE:FF', 'danger')
+            return redirect(url_for('users.bind_mac', username=username))
+
+        mikrotik = get_mikrotik_client()
+        success, message = mikrotik.bind_mac_to_user(username, mac_address)
+
+        if success:
+            local_user.mac_address = mac_address
+            db.session.commit()
+            flash(f'MAC address {mac_address} bound to {username}', 'success')
+            log = AuditLog(operator_id=current_user.id, action='update',
+                          target_user=username, details=f'MAC bound: {mac_address}')
+            db.session.add(log)
+            db.session.commit()
+            return redirect(url_for('users.index'))
+        else:
+            flash(f'Failed to bind MAC: {message}', 'danger')
+
+    return render_template('users/bind_mac.html', username=username,
+                         current_mac=local_user.mac_address)
+
+
+@bp.route('/unbind-mac/<username>')
+@login_required
+@operator_required
+def unbind_mac(username):
+    """Remove MAC address binding from user"""
+    from app.models import HotspotUser
+
+    local_user = HotspotUser.query.filter_by(username=username).first()
+    if local_user:
+        local_user.mac_address = None
+        db.session.commit()
+
+    mikrotik = get_mikrotik_client()
+    success, message = mikrotik.unbind_mac_from_user(username)
+
+    if success:
+        flash(f'MAC address unbound from {username}', 'success')
+        log = AuditLog(operator_id=current_user.id, action='update',
+                      target_user=username, details='MAC unbound')
+        db.session.add(log)
+        db.session.commit()
+    else:
+        flash(f'Failed to unbind MAC: {message}', 'danger')
+
+    return redirect(url_for('users.index'))
+
+
+@bp.route('/set-expiration/<username>', methods=['GET', 'POST'])
+@login_required
+@operator_required
+def set_expiration(username):
+    """Set expiration date for user"""
+    from app.models import HotspotUser
+    from datetime import datetime
+
+    local_user = HotspotUser.query.filter_by(username=username).first()
+    if not local_user:
+        local_user = HotspotUser(username=username)
+        db.session.add(local_user)
+
+    if request.method == 'POST':
+        expire_date_str = request.form.get('expire_date', '')
+        if expire_date_str:
+            try:
+                expire_date = datetime.strptime(expire_date_str, '%Y-%m-%d')
+                local_user.expires_at = expire_date
+                db.session.commit()
+                flash(f'Expiration set for {username}', 'success')
+                log = AuditLog(operator_id=current_user.id, action='update',
+                              target_user=username, details=f'Expires: {expire_date_str}')
+                db.session.add(log)
+                db.session.commit()
+            except ValueError:
+                flash('Invalid date format', 'danger')
+        else:
+            local_user.expires_at = None
+            db.session.commit()
+            flash(f'Expiration removed for {username}', 'success')
+
+        return redirect(url_for('users.index'))
+
+    return render_template('users/set_expiration.html', username=username,
+                         current_expires=local_user.expires_at)
+
+
 def generate_password(length=8):
     return ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
