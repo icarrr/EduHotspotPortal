@@ -5,140 +5,427 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}EduHotspotPortal{% endblock %}</title>
 
-    <!-- AdminLTE CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='adminlte/dist/css/adminlte.min.css') }}">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='adminlte/plugins/fontawesome-free/css/all.min.css') }}">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <!-- Modern Bootstrap 5 + Tabler Icons style -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS for modern look -->
+    <style>
+        :root {
+            --primary: #206bc4;
+            --primary-light: #eef2ff;
+            --success: #2fb344;
+            --warning: #f59e0b;
+            --danger: #d63939;
+            --info: #4299e1;
+            --sidebar-width: 260px;
+            --header-height: 60px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-brand:hover {
+            color: white;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .sidebar-item {
+            padding: 0.5rem 1rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .sidebar-link i {
+            font-size: 1.25rem;
+            width: 1.5rem;
+            text-align: center;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            height: var(--header-height);
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 999;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--primary-light);
+            border-radius: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .user-dropdown:hover {
+            background: #dbeafe;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 2rem;
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+            transition: all 0.2s;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .card-header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            padding: 1.25rem 1.5rem;
+            border-radius: 1rem 1rem 0 0 !important;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .stat-card .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .stat-card .stat-label {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        /* Buttons */
+        .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: #1e40af;
+        }
+
+        /* Tables */
+        .table {
+            margin: 0;
+        }
+
+        .table thead th {
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+            font-weight: 600;
+            color: #475569;
+            padding: 1rem;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        /* Badges */
+        .badge {
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            font-weight: 500;
+        }
+
+        /* Alerts */
+        .alert {
+            border: none;
+            border-radius: 0.75rem;
+        }
+
+        /* Footer */
+        .footer {
+            margin-left: var(--sidebar-width);
+            padding: 1.5rem 2rem;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        /* Mobile Toggle */
+        .mobile-toggle {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .header, .main-content, .footer {
+                margin-left: 0;
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+        }
+
+        /* Page Title */
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
-    <div class="wrapper">
+<body>
+    <!-- Sidebar -->
+    {% if current_user.is_authenticated %}
+    <aside class="sidebar" id="sidebar">
+        <a href="{{ url_for('main.dashboard') }}" class="sidebar-brand">
+            <i class="ti ti-wifi"></i>
+            <span>EduHotspotPortal</span>
+        </a>
 
-        <!-- Navbar -->
-        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
-                </li>
-            </ul>
-            <ul class="navbar-nav ml-auto">
-                {% if current_user.is_authenticated %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link" data-toggle="dropdown" href="#">
-                        <i class="fas fa-user"></i> {{ current_user.name or current_user.username }}
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right">
-                        <a href="#" class="dropdown-item">
-                            <i class="fas fa-cog"></i> Settings
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="{{ url_for('auth.logout') }}" class="dropdown-item">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
-                    </div>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-
-        <!-- Sidebar -->
-        {% if current_user.is_authenticated %}
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <a href="{{ url_for('main.dashboard') }}" class="brand-link">
-                <span class="brand-text font-weight-light">EduHotspotPortal</span>
-            </a>
-            <div class="sidebar">
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                        <li class="nav-item">
-                            <a href="{{ url_for('main.dashboard') }}" class="nav-link">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>Dashboard</p>
-                            </a>
-                        </li>
-                        {% if current_user.has_role('admin_it', 'operator') %}
-                        <li class="nav-item">
-                            <a href="{{ url_for('users.index') }}" class="nav-link">
-                                <i class="nav-icon fas fa-users"></i>
-                                <p>User Management</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ url_for('users.online_sessions') }}" class="nav-link">
-                                <i class="nav-icon fas fa-wifi"></i>
-                                <p>Online Sessions</p>
-                            </a>
-                        </li>
-                        {% endif %}
-                        {% if current_user.has_role('admin_it') %}
-                        <li class="nav-item">
-                            <a href="{{ url_for('users.operators') }}" class="nav-link">
-                                <i class="nav-icon fas fa-user-cog"></i>
-                                <p>Operators</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ url_for('users.audit_logs') }}" class="nav-link">
-                                <i class="nav-icon fas fa-clipboard-list"></i>
-                                <p>Audit Logs</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ url_for('settings.index') }}" class="nav-link">
-                                <i class="nav-icon fas fa-cog"></i>
-                                <p>Settings</p>
-                            </a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
+        <nav class="sidebar-nav">
+            <div class="sidebar-item">
+                <a href="{{ url_for('main.dashboard') }}" class="sidebar-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+                    <i class="ti ti-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
             </div>
-        </aside>
-        {% endif %}
 
-        <!-- Content -->
-        <div class="content-wrapper">
-            <section class="content-header">
-                <div class="container-fluid">
-                    <div class="row mb-2">
-                        <div class="col-sm-6">
-                            <h1>{% block page_title %}{% endblock %}</h1>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <section class="content">
-                <div class="container-fluid">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ category }} alert-dismissible">
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                    {{ message }}
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
-                    {% block content %}{% endblock %}
-                </div>
-            </section>
+            {% if current_user.has_role('admin_it', 'operator') %}
+            <div class="sidebar-item">
+                <a href="{{ url_for('users.index') }}" class="sidebar-link {% if 'users' in request.endpoint %}active{% endif %}">
+                    <i class="ti ti-users"></i>
+                    <span>User Management</span>
+                </a>
+            </div>
+
+            <div class="sidebar-item">
+                <a href="{{ url_for('users.online_sessions') }}" class="sidebar-link {% if request.endpoint == 'users.online_sessions' %}active{% endif %}">
+                    <i class="ti ti-wifi"></i>
+                    <span>Online Sessions</span>
+                </a>
+            </div>
+            {% endif %}
+
+            {% if current_user.has_role('admin_it') %}
+            <div class="sidebar-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <small style="color: rgba(255,255,255,0.5); padding: 0 1rem;">ADMINISTRATION</small>
+            </div>
+
+            <div class="sidebar-item">
+                <a href="{{ url_for('users.operators') }}" class="sidebar-link {% if request.endpoint == 'users.operators' %}active{% endif %}">
+                    <i class="ti ti-user-cog"></i>
+                    <span>Operators</span>
+                </a>
+            </div>
+
+            <div class="sidebar-item">
+                <a href="{{ url_for('users.audit_logs') }}" class="sidebar-link {% if request.endpoint == 'users.audit_logs' %}active{% endif %}">
+                    <i class="ti ti-clipboard-list"></i>
+                    <span>Audit Logs</span>
+                </a>
+            </div>
+
+            <div class="sidebar-item">
+                <a href="{{ url_for('settings.index') }}" class="sidebar-link {% if 'settings' in request.endpoint %}active{% endif %}">
+                    <i class="ti ti-settings"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+            {% endif %}
+        </nav>
+    </aside>
+    {% endif %}
+
+    <!-- Header -->
+    {% if current_user.is_authenticated %}
+    <header class="header">
+        <div class="header-left">
+            <button class="btn btn-link mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')">
+                <i class="ti ti-menu-2"></i>
+            </button>
         </div>
 
-        <!-- Footer -->
-        <footer class="main-footer">
-            <strong>EduHotspotPortal</strong> - Hotspot Management System
-            <div class="float-right d-none d-sm-inline">
-                Role: {{ current_user.role|title if current_user.is_authenticated else 'Guest' }}
+        <div class="header-right">
+            <div class="dropdown">
+                <a href="#" class="user-dropdown" data-bs-toggle="dropdown">
+                    <i class="ti ti-user-circle"></i>
+                    <span>{{ current_user.name or current_user.username }}</span>
+                    <i class="ti ti-chevron-down" style="font-size: 0.75rem;"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><span class="dropdown-item-text" style="color: #64748b; font-size: 0.875rem;">
+                        <i class="ti ti-badge"></i> Role: {{ current_user.role|title }}
+                    </span></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                        <i class="ti ti-logout"></i> Logout
+                    </a></li>
+                </ul>
             </div>
-        </footer>
-    </div>
+        </div>
+    </header>
+    {% endif %}
 
-    <!-- AdminLTE JS -->
-    <script src="{{ url_for('static', filename='adminlte/plugins/jquery/jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='adminlte/dist/js/adminlte.min.js') }}"></script>
-    <!-- Custom JS -->
-    <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block page_title %}{% endblock %}
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% if current_user.is_authenticated %}
+    <footer class="footer">
+        <strong>EduHotspotPortal</strong> - Hotspot Management System
+        <span class="float-end">Role: {{ current_user.role|title }}</span>
+    </footer>
+    {% endif %}
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

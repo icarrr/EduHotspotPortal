@@ -6,54 +6,92 @@
 {% block content %}
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Operator Activity Logs</h3>
+        <h3 class="card-title">
+            <i class="ti ti-clipboard-list me-2"></i>Operator Activity Logs
+        </h3>
+        <div class="card-tools">
+            <span class="badge bg-info-lt">
+                <i class="ti ti-history me-1"></i>Showing last {{ logs.per_page }} entries
+            </span>
+        </div>
     </div>
+
     <div class="card-body">
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Timestamp</th>
-                    <th>Operator</th>
-                    <th>Action</th>
-                    <th>Target User</th>
-                    <th>Details</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for log in logs.items %}
-                <tr>
-                    <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                    <td>{{ log.operator.name or log.operator.username if log.operator else 'Unknown' }}</td>
-                    <td>
-                        {% if log.action == 'create' %}
-                            <span class="badge badge-success">CREATE</span>
-                        {% elif log.action == 'update' %}
-                            <span class="badge badge-info">UPDATE</span>
-                        {% elif log.action == 'delete' %}
-                            <span class="badge badge-danger">DELETE</span>
-                        {% elif log.action == 'reset' %}
-                            <span class="badge badge-warning">RESET</span>
-                        {% else %}
-                            <span class="badge badge-secondary">{{ log.action|upper }}</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ log.target_user or '-' }}</td>
-                    <td>{{ log.details or '-' }}</td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="5" class="text-center">No audit logs yet</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Operator</th>
+                        <th>Action</th>
+                        <th>Target User</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs.items %}
+                    <tr>
+                        <td>
+                            <small class="text-muted">
+                                {{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                            </small>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="ti ti-user-circle me-2 text-muted"></i>
+                                {{ log.operator.name or log.operator.username if log.operator else 'Unknown' }}
+                            </div>
+                        </td>
+                        <td>
+                            {% if log.action == 'create' %}
+                                <span class="badge bg-success-lt">
+                                    <i class="ti ti-plus me-1"></i>CREATE
+                                </span>
+                            {% elif log.action == 'update' %}
+                                <span class="badge bg-info-lt">
+                                    <i class="ti ti-edit me-1"></i>UPDATE
+                                </span>
+                            {% elif log.action == 'delete' %}
+                                <span class="badge bg-danger-lt">
+                                    <i class="ti ti-trash me-1"></i>DELETE
+                                </span>
+                            {% elif log.action == 'reset' %}
+                                <span class="badge bg-warning-lt">
+                                    <i class="ti ti-key me-1"></i>RESET
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary-lt">
+                                    {{ log.action|upper }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <code class="bg-dark-lt px-2 py-1 rounded">{{ log.target_user or '-' }}</code>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ log.details or '-' }}</small>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <i class="ti ti-clipboard-off fs-3 text-muted mb-3"></i>
+                            <p class="text-muted">No audit logs yet</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <!-- Pagination -->
-        <nav>
-            <ul class="pagination">
+        <nav aria-label="Audit logs pagination">
+            <ul class="pagination justify-content-center">
                 {% if logs.has_prev %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('users.audit_logs', page=logs.prev_num) }}">Previous</a>
+                    <a class="page-link" href="{{ url_for('users.audit_logs', page=logs.prev_num) }}">
+                        <i class="ti ti-chevron-left me-1"></i>Previous
+                    </a>
                 </li>
                 {% endif %}
 
@@ -63,13 +101,17 @@
                             <a class="page-link" href="{{ url_for('users.audit_logs', page=page) }}">{{ page }}</a>
                         </li>
                     {% else %}
-                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
                     {% endif %}
                 {% endfor %}
 
                 {% if logs.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('users.audit_logs', page=logs.next_num) }}">Next</a>
+                    <a class="page-link" href="{{ url_for('users.audit_logs', page=logs.next_num) }}">
+                        Next<i class="ti ti-chevron-right ms-1"></i>
+                    </a>
                 </li>
                 {% endif %}
             </ul>

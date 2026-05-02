@@ -1,36 +1,71 @@
-{% extends 'layouts/base.html' %}
+{% extends "layouts/base.html" %}
 
 {% block title %}Bind MAC Address - EduHotspotPortal{% endblock %}
+{% block page_title %}Bind MAC Address to {{ username }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card card-primary">
-                <div class="card-header">
-                    <h3 class="card-title">Bind MAC Address to {{ username }}</h3>
-                </div>
-                <form method="POST">
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label for="mac_address">MAC Address</label>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-tag me-2"></i>Bind MAC Address
+                </h3>
+            </div>
+            <form method="POST">
+                <div class="card-body">
+                    <div class="alert bg-info-lt" role="alert">
+                        <i class="ti ti-info-circle me-2"></i>
+                        <strong>Device Binding</strong><br>
+                        Binding a MAC address restricts the user to only login from the specified device.
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="ti ti-user"></i>
+                            </span>
+                            <input type="text" class="form-control" value="{{ username }}" disabled>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-500">MAC Address <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="ti ti-device-desktop"></i>
+                            </span>
                             <input type="text" class="form-control" id="mac_address" name="mac_address"
                                    placeholder="AA:BB:CC:DD:EE:FF" value="{{ current_mac or '' }}"
                                    pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$" required>
-                            <small class="form-text text-muted">Format: AA:BB:CC:DD:EE:FF (colon or dash separated)</small>
                         </div>
-                        {% if current_mac %}
-                        <div class="alert alert-info">
-                            Currently bound to: <strong>{{ current_mac }}</strong>
-                        </div>
-                        {% endif %}
+                        <small class="text-muted">Format: AA:BB:CC:DD:EE:FF (colon or dash separated)</small>
                     </div>
-                    <div class="card-footer">
-                        <button type="submit" class="btn btn-primary">Bind MAC Address</button>
-                        <a href="{{ url_for('users.index') }}" class="btn btn-default">Cancel</a>
+
+                    {% if current_mac %}
+                    <div class="alert bg-light-lt" role="alert">
+                        <i class="ti ti-circle-check me-2"></i>
+                        Currently bound to: <strong>{{ current_mac }}</strong>
                     </div>
-                </form>
-            </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-device-floppy me-1"></i>Bind MAC Address
+                    </button>
+                    <a href="{{ url_for('users.index') }}" class="btn btn-outline-secondary">
+                        <i class="ti ti-x me-1"></i>Cancel
+                    </a>
+                    {% if current_mac %}
+                    <a href="{{ url_for('users.unbind_mac', username=username) }}"
+                       class="btn btn-outline-danger ms-auto"
+                       onclick="return confirm('Remove MAC binding from {{ username }}?')">
+                        <i class="ti ti-unlink me-1"></i>Unbind
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
         </div>
     </div>
 </div>

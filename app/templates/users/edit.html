@@ -1,32 +1,85 @@
 {% extends "layouts/base.html" %}
 
 {% block title %}Edit User - EduHotspotPortal{% endblock %}
-{% block page_title %}Edit Hotspot User{% endblock %}
+{% block page_title %}Edit User: {{ user.name }}{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Edit User: {{ user.name }}</h3>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-edit me-2"></i>Edit Hotspot User
+                </h3>
+            </div>
+            <form method="POST">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="ti ti-user"></i>
+                            </span>
+                            <input type="text" class="form-control" value="{{ user.name }}" disabled>
+                        </div>
+                        <small class="text-muted">Username cannot be changed</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Profile (MikroTik)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="ti ti-router"></i>
+                            </span>
+                            <input type="text" class="form-control" name="profile"
+                                   value="{{ user.profile or '' }}"
+                                   placeholder="e.g., hotspot-siswa">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="enabled"
+                                   id="enabled" {% if user.disabled != 'true' %}checked{% endif %}>
+                            <label class="form-check-label fw-500" for="enabled">
+                                <i class="ti ti-circle-check me-1"></i>User Enabled
+                            </label>
+                        </div>
+                        <small class="text-muted">Disabled users cannot login to hotspot</small>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="alert bg-light-lt">
+                        <h6 class="alert-heading mb-2">
+                            <i class="ti ti-zap me-1"></i>Quick Actions
+                        </h6>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('users.reset_password', username=user.name) }}"
+                               class="btn btn-sm btn-warning"
+                               onclick="return confirm('Reset password for {{ user.name }}?')">
+                                <i class="ti ti-key me-1"></i>Reset Password
+                            </a>
+                            <a href="{{ url_for('users.bind_mac', username=user.name) }}"
+                               class="btn btn-sm btn-info">
+                                <i class="ti ti-tag me-1"></i>Bind MAC
+                            </a>
+                            <a href="{{ url_for('users.set_expiration', username=user.name) }}"
+                               class="btn btn-sm btn-outline-warning">
+                                <i class="ti ti-clock me-1"></i>Set Expiration
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-check me-1"></i>Save Changes
+                    </button>
+                    <a href="{{ url_for('users.index') }}" class="btn btn-outline-secondary">
+                        <i class="ti ti-x me-1"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-    <form method="POST">
-        <div class="card-body">
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" class="form-control" value="{{ user.name }}" disabled>
-            </div>
-            <div class="form-group">
-                <label>Profile</label>
-                <input type="text" class="form-control" name="profile" value="{{ user.profile or '' }}">
-            </div>
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" name="enabled" {% if user.disabled != 'true' %}checked{% endif %}>
-                <label class="form-check-label">Enabled</label>
-            </div>
-        </div>
-        <div class="card-footer">
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-            <a href="{{ url_for('users.index') }}" class="btn btn-default">Cancel</a>
-        </div>
-    </form>
 </div>
 {% endblock %}

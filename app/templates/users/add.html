@@ -4,38 +4,72 @@
 {% block page_title %}Add Hotspot User{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Add New Hotspot User</h3>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-user-plus me-2"></i>Add New Hotspot User
+                </h3>
+            </div>
+            <form method="POST">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Username <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="ti ti-user"></i>
+                            </span>
+                            <input type="text" class="form-control" name="username" required
+                                   placeholder="Enter username (e.g., 12345)">
+                        </div>
+                        <small class="text-muted">3-50 characters, letters/numbers/underscore only</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="ti ti-lock"></i>
+                            </span>
+                            <input type="text" class="form-control" name="password"
+                                   placeholder="Leave empty to auto-generate">
+                        </div>
+                        <small class="text-muted">Auto-generated if left empty</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Role <span class="text-danger">*</span></label>
+                        <select class="form-select" name="role" required>
+                            <option value="siswa" selected>Siswa (Student)</option>
+                            <option value="guru">Guru (Teacher)</option>
+                            <option value="admin">Admin</option>
+                            <option value="trial">Trial</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Profile (MikroTik)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="ti ti-router"></i>
+                            </span>
+                            <input type="text" class="form-control" name="profile"
+                                   placeholder="e.g., hotspot-siswa">
+                        </div>
+                        <small class="text-muted">Matches role by default if left empty</small>
+                    </div>
+                </div>
+                <div class="card-footer d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-check me-1"></i>Add User
+                    </button>
+                    <a href="{{ url_for('users.index') }}" class="btn btn-outline-secondary">
+                        <i class="ti ti-x me-1"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-    <form method="POST">
-        <div class="card-body">
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" class="form-control" name="username" required>
-            </div>
-            <div class="form-group">
-                <label>Password (leave empty to auto-generate)</label>
-                <input type="text" class="form-control" name="password">
-            </div>
-            <div class="form-group">
-                <label>Role</label>
-                <select class="form-control" name="role">
-                    <option value="siswa">Siswa</option>
-                    <option value="guru">Guru</option>
-                    <option value="admin">Admin</option>
-                    <option value="trial">Trial</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Profile (MikroTik)</label>
-                <input type="text" class="form-control" name="profile" placeholder="hotspot-siswa">
-            </div>
-        </div>
-        <div class="card-footer">
-            <button type="submit" class="btn btn-primary">Add User</button>
-            <a href="{{ url_for('users.index') }}" class="btn btn-default">Cancel</a>
-        </div>
-    </form>
 </div>
 {% endblock %}

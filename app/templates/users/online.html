@@ -6,39 +6,73 @@
 {% block content %}
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Currently Online Users</h3>
+        <h3 class="card-title">
+            <i class="ti ti-wifi me-2"></i>Currently Online Users
+            <span class="badge bg-success ms-2">{{ sessions|length }} active</span>
+        </h3>
+        <div class="card-tools">
+            <button class="btn btn-sm btn-outline-primary" onclick="location.reload()">
+                <i class="ti ti-refresh me-1"></i>Refresh
+            </button>
+        </div>
     </div>
+
     <div class="card-body">
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>IP Address</th>
-                    <th>MAC Address</th>
-                    <th>Login Time</th>
-                    <th>Duration</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for session in sessions %}
-                <tr>
-                    <td>{{ session.username }}</td>
-                    <td>{{ session.ip }}</td>
-                    <td>{{ session.mac }}</td>
-                    <td>{{ session.login_time }}</td>
-                    <td>{{ session.duration }}</td>
-                    <td>
-                        <a href="#" class="btn btn-xs btn-danger"><i class="fas fa-sign-out-alt"></i> Disconnect</a>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="6" class="text-center">No users online</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>IP Address</th>
+                        <th>MAC Address</th>
+                        <th>Login Time</th>
+                        <th>Duration</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm bg-success-lt me-2">
+                                    <i class="ti ti-user"></i>
+                                </div>
+                                <strong>{{ session.username }}</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <code class="bg-dark-lt px-2 py-1 rounded">{{ session.ip }}</code>
+                        </td>
+                        <td>
+                            <span class="badge bg-info-lt">{{ session.mac }}</span>
+                        </td>
+                        <td>{{ session.login_time }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="ti ti-clock me-1 text-muted"></i>
+                                {{ session.duration }}
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('users.disconnect', session_id=session['.id']) }}"
+                               class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Disconnect {{ session.username }}?')">
+                                <i class="ti ti-logout me-1"></i>Disconnect
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <i class="ti ti-wifi-off fs-3 text-muted mb-3"></i>
+                            <p class="text-muted">No users currently online</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

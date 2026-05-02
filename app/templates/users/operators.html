@@ -6,51 +6,123 @@
 {% block content %}
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">System Operators</h3>
+        <h3 class="card-title">
+            <i class="ti ti-user-cog me-2"></i>System Operators
+        </h3>
         <div class="card-tools">
-            <a href="#" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus"></i> Add Operator
-            </a>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addOperatorModal">
+                <i class="ti ti-user-plus me-1"></i>Add Operator
+            </button>
         </div>
     </div>
+
     <div class="card-body">
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Name</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for op in operators %}
-                <tr>
-                    <td>{{ op.username }}</td>
-                    <td>{{ op.name or '-' }}</td>
-                    <td><span class="badge badge-primary">{{ op.role|title }}</span></td>
-                    <td>
-                        {% if op.is_active %}
-                            <span class="badge badge-success">Active</span>
-                        {% else %}
-                            <span class="badge badge-danger">Inactive</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ op.created_at.strftime('%Y-%m-%d') }}</td>
-                    <td>
-                        <a href="#" class="btn btn-xs btn-info"><i class="fas fa-edit"></i></a>
-                        <a href="#" class="btn btn-xs btn-danger"><i class="fas fa-trash"></i></a>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="6" class="text-center">No operators yet</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for op in operators %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm bg-primary-lt me-2">
+                                    <i class="ti ti-user"></i>
+                                </div>
+                                <strong>{{ op.username }}</strong>
+                            </div>
+                        </td>
+                        <td>{{ op.name or '-' }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'danger' if op.role == 'admin_it' else 'info' }}-lt">
+                                {{ op.role|title }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if op.is_active %}
+                                <span class="badge bg-success-lt">
+                                    <i class="ti ti-circle-check me-1"></i>Active
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger-lt">
+                                    <i class="ti ti-circle-off me-1"></i>Inactive
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ op.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-outline-info" title="Edit">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <i class="ti ti-users-off fs-3 text-muted mb-3"></i>
+                            <p class="text-muted">No operators yet</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Operator Modal -->
+<div class="modal fade" id="addOperatorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="#">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="ti ti-user-plus me-2"></i>Add New Operator
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Username <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Name</label>
+                        <input type="text" class="form-control" name="name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Role <span class="text-danger">*</span></label>
+                        <select class="form-select" name="role" required>
+                            <option value="operator">Operator</option>
+                            <option value="admin_it">Admin IT</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-check me-1"></i>Add Operator
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}

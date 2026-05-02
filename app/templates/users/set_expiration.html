@@ -1,35 +1,64 @@
-{% extends 'layouts/base.html' %}
+{% extends "layouts/base.html" %}
 
 {% block title %}Set Expiration - EduHotspotPortal{% endblock %}
+{% block page_title %}Set Expiration Date for {{ username }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card card-warning">
-                <div class="card-header">
-                    <h3 class="card-title">Set Expiration Date for {{ username }}</h3>
-                </div>
-                <form method="POST">
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label for="expire_date">Expiration Date</label>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-clock me-2"></i>Set Expiration Date
+                </h3>
+            </div>
+            <form method="POST">
+                <div class="card-body">
+                    <div class="alert bg-warning-lt" role="alert">
+                        <i class="ti ti-alert-triangle me-2"></i>
+                        <strong>Auto-Expiration</strong><br>
+                        When the expiration date passes, the user will be automatically disabled.
+                        Run <code>python expire_users.py</code> periodically to check.
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="ti ti-user"></i>
+                            </span>
+                            <input type="text" class="form-control" value="{{ username }}" disabled>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Expiration Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="ti ti-calendar"></i>
+                            </span>
                             <input type="date" class="form-control" id="expire_date" name="expire_date"
                                    value="{{ current_expires.strftime('%Y-%m-%d') if current_expires else '' }}">
-                            <small class="form-text text-muted">Leave empty to remove expiration</small>
                         </div>
-                        {% if current_expires %}
-                        <div class="alert alert-info">
-                            Current expiration: <strong>{{ current_expires.strftime('%Y-%m-%d') }}</strong>
-                        </div>
-                        {% endif %}
+                        <small class="text-muted">Leave empty to remove expiration</small>
                     </div>
-                    <div class="card-footer">
-                        <button type="submit" class="btn btn-warning">Set Expiration</button>
-                        <a href="{{ url_for('users.index') }}" class="btn btn-default">Cancel</a>
+
+                    {% if current_expires %}
+                    <div class="alert bg-light-lt" role="alert">
+                        <i class="ti ti-clock-check me-2"></i>
+                        Current expiration: <strong>{{ current_expires.strftime('%Y-%m-%d') }}</strong>
                     </div>
-                </form>
-            </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer d-flex gap-2">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="ti ti-check me-1"></i>Set Expiration
+                    </button>
+                    <a href="{{ url_for('users.index') }}" class="btn btn-outline-secondary">
+                        <i class="ti ti-x me-1"></i>Cancel
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -6,87 +6,125 @@
 {% block content %}
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Hotspot Users</h3>
+        <h3 class="card-title">
+            <i class="ti ti-users me-2"></i>Hotspot Users
+        </h3>
         <div class="card-tools">
             <a href="{{ url_for('users.add') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus"></i> Add User
+                <i class="ti ti-user-plus me-1"></i>Add User
             </a>
             <a href="{{ url_for('users.import_users') }}" class="btn btn-success btn-sm">
-                <i class="fas fa-file-import"></i> Import CSV
+                <i class="ti ti-file-upload me-1"></i>Import XLSX
             </a>
         </div>
     </div>
+
     <div class="card-body">
-        <form method="GET" class="mb-3">
-            <div class="input-group">
-                <input type="text" class="form-control" name="search"
+        <!-- Search Form -->
+        <form method="GET" class="mb-4">
+            <div class="input-group input-group-lg">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="ti ti-search text-muted"></i>
+                </span>
+                <input type="text" class="form-control border-start-0" name="search"
                        placeholder="Search by username or name..." value="{{ search or '' }}">
-                <div class="input-group-append">
-                    <button class="btn btn-info" type="submit">
-                        <i class="fas fa-search"></i> Search
-                    </button>
-                    {% if search %}
-                    <a href="{{ url_for('users.index') }}" class="btn btn-default">
-                        <i class="fas fa-times"></i> Clear
-                    </a>
-                    {% endif %}
-                </div>
+                <button class="btn btn-info" type="submit">
+                    Search
+                </button>
+                {% if search %}
+                <a href="{{ url_for('users.index') }}" class="btn btn-outline-secondary">
+                    <i class="ti ti-x"></i> Clear
+                </a>
+                {% endif %}
             </div>
         </form>
 
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Name/Role</th>
-                    <th>Profile</th>
-                    <th>Status</th>
-                    <th style="min-width: 200px;">Quick Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in users %}
-                <tr>
-                    <td><strong>{{ user.name }}</strong></td>
-                    <td>
-                        {{ user.comment or '-' }}
-                        {% if user.comment and 'role:' in user.comment %}
-                            <br><span class="badge badge-info">{{ user.comment.replace('role:', '')|title }}</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ user.profile or '-' }}</td>
-                    <td>
-                        {% if user.disabled == 'true' %}
-                            <span class="badge badge-danger">Disabled</span>
-                        {% else %}
-                            <span class="badge badge-success">Active</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{{ url_for('users.edit', username=user.name) }}" class="btn btn-xs btn-info" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <a href="{{ url_for('users.reset_password', username=user.name) }}" class="btn btn-xs btn-warning"
-                           onclick="return confirm('Reset password for {{ user.name }}?')" title="Reset Password">
-                            <i class="fas fa-key"></i>
-                        </a>
-                        <a href="{{ url_for('users.toggle', username=user.name) }}" class="btn btn-xs {% if user.disabled == 'true' %}btn-success{% else %}btn-secondary{% endif %}"
-                           title="{% if user.disabled == 'true' %}Enable{% else %}Disable{% endif %}">
-                            <i class="fas {% if user.disabled == 'true' %}fa-check{% else %}fa-ban{% endif %}"></i>
-                        </a>
-                        <a href="{{ url_for('users.delete', username=user.name) }}" class="btn btn-xs btn-danger"
-                           onclick="return confirm('Delete user {{ user.name }}?')" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="5" class="text-center">No users found</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <!-- Users Table -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Name/Role</th>
+                        <th>Profile</th>
+                        <th>Status</th>
+                        <th style="min-width: 250px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm bg-primary-lt me-2">
+                                    <i class="ti ti-user"></i>
+                                </div>
+                                <strong>{{ user.name }}</strong>
+                            </div>
+                        </td>
+                        <td>
+                            {{ user.comment or '-' }}
+                            {% if user.comment and 'role:' in user.comment %}
+                                <br><span class="badge bg-info-lt">{{ user.comment.replace('role:', '')|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <code class="bg-dark-lt px-2 py-1 rounded">{{ user.profile or '-' }}</code>
+                        </td>
+                        <td>
+                            {% if user.disabled == 'true' %}
+                                <span class="badge bg-danger-lt">
+                                    <i class="ti ti-circle-off me-1"></i>Disabled
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success-lt">
+                                    <i class="ti ti-circle-check me-1"></i>Active
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('users.edit', username=user.name) }}"
+                                   class="btn btn-sm btn-outline-info" title="Edit">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                                <a href="{{ url_for('users.reset_password', username=user.name) }}"
+                                   class="btn btn-sm btn-outline-warning"
+                                   onclick="return confirm('Reset password for {{ user.name }}?')" title="Reset Password">
+                                    <i class="ti ti-key"></i>
+                                </a>
+                                <a href="{{ url_for('users.toggle', username=user.name) }}"
+                                   class="btn btn-sm {% if user.disabled == 'true' %}btn-outline-success{% else %}btn-outline-secondary{% endif %}"
+                                   title="{% if user.disabled == 'true' %}Enable{% else %}Disable{% endif %}">
+                                    <i class="ti {% if user.disabled == 'true' %}ti-check{% else %}ti-ban{% endif %}"></i>
+                                </a>
+                                <a href="{{ url_for('users.bind_mac', username=user.name) }}"
+                                   class="btn btn-sm btn-outline-primary" title="Bind MAC">
+                                    <i class="ti ti-tag"></i>
+                                </a>
+                                <a href="{{ url_for('users.set_expiration', username=user.name) }}"
+                                   class="btn btn-sm btn-outline-warning" title="Set Expiration">
+                                    <i class="ti ti-clock"></i>
+                                </a>
+                                <a href="{{ url_for('users.delete', username=user.name) }}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Delete user {{ user.name }}?')" title="Delete">
+                                    <i class="ti ti-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <i class="ti ti-users-off fs-3 text-muted mb-3"></i>
+                            <p class="text-muted">No users found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
