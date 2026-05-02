@@ -72,9 +72,6 @@ def scheduler_loop():
     print(f"Checking every {CHECK_INTERVAL_HOURS} hour(s) for expired trial users...")
     print("-" * 60)
 
-    # Run once immediately
-    expire_users()
-
     while True:
         try:
             expire_users()
