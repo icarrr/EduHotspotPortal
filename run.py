@@ -90,11 +90,13 @@ if __name__ == '__main__':
         db.create_all()
         # Create default admin if not exists
         if not Operator.query.filter_by(username='admin').first():
+            import os
+            default_password = os.getenv('DEFAULT_ADMIN_PASSWORD', 'admin123')
             admin = Operator(username='admin', name='Administrator', role='admin_it')
-            admin.set_password('admin123')
+            admin.set_password(default_password)
             db.session.add(admin)
             db.session.commit()
-            print('Default admin created: admin/admin123')
+            print(f'Default admin created: admin/{default_password}')
 
     # Start scheduler in background thread
     print("Starting scheduler in background thread...")
