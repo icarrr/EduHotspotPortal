@@ -16,12 +16,17 @@ def expire_users():
     with app.app_context():
         now = datetime.utcnow()
         
-        # Find users with expiration date in the past
+        # Find TRIAL users with expiration date in the past only
         expired_users = HotspotUser.query.filter(
             HotspotUser.expires_at < now,
             HotspotUser.expires_at.isnot(None),
-            HotspotUser.status == 'active'
+            HotspotUser.status == 'active',
+            HotspotUser.role == 'trial'  # Only expire trial users
         ).all()
+
+        if not expired_users:
+            print(f"[{now}] No expired trial users found")
+            return
         
         if not expired_users:
             print(f"[{now}] No expired users found")
