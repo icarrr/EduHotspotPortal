@@ -268,10 +268,42 @@ def import_users():
     return render_template('users/import.html')
 
 
-@bp.route('/operators')
+@bp.route('/operators', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def operators():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        name = request.form.get('name')
+        password = request.form.get('password')
+        role = request.form.get('role', 'operator')
+
+        if not username or not password:
+            flash('Username and password required', 'danger')
+            return redirect(url_for('users.operators'))
+
+        if role not in ['admin_it', 'operator']:
+            flash('Invalid role', 'danger')
+            return redirect(url_for('users.operators'))
+
+        existing = Operator.query.filter_by(username=username).first()
+        if existing:
+            flash('Username already exists', 'danger')
+            return redirect(url_for('users.operators'))
+
+        op = Operator(username=username, name=name, role=role, active=True)
+        op.set_password(password)
+        db.session.add(op)
+        db.session.commit()
+
+        log = AuditLog(operator_id=current_user.id, action='create',
+                      target_user=username, details=f'New operator, Role: {role}')
+        db.session.add(log)
+        db.session.commit()
+
+        flash(f'Operator {username} added successfully', 'success')
+        return redirect(url_for('users.operators'))
+
     operators = Operator.query.all()
     return render_template('users/operators.html', operators=operators)
 
