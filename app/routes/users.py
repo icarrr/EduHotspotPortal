@@ -300,6 +300,42 @@ def download_passwords():
 
     response = make_response(output.read())
     response.headers['Content-Disposition'] = 'attachment; filename=user_passwords.xlsx'
+    response.headers['Content-type'] = 'application/vnd.openxmlformats-officedocument.spspreadsheetml.sheet'
+    return response
+
+
+@bp.route('/export')
+@login_required
+@operator_required
+def export_users():
+    mikrotik = get_mikrotik_client()
+    hotspot_users = mikrotik.get_hotspot_users()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'Hotspot Users'
+    ws.column_dimensions['A'].width = 20
+    ws.column_dimensions['B'].width = 15
+    ws.column_dimensions['C'].width = 12
+    ws.column_dimensions['D'].width = 15
+
+    ws.append(['username', 'password', 'role', 'profile'])
+
+    for user in hotspot_users:
+        username = user.get('name', '')
+        password = user.get('password', '')
+        comment = user.get('comment', '')
+        role = comment.replace('role:', '') if comment.startswith('role:') else ''
+        profile = user.get('profile', '')
+
+        ws.append([username, password, role, profile])
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    response = make_response(output.read())
+    response.headers['Content-Disposition'] = 'attachment; filename=hotspot_users.xlsx'
     response.headers['Content-type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     return response
 

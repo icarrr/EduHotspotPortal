@@ -10,6 +10,9 @@
             <i class="ti ti-users me-2"></i>Hotspot Users
         </h3>
         <div class="card-tools">
+            <a href="{{ url_for('users.export_users') }}" class="btn btn-info btn-sm">
+                <i class="ti ti-download me-1"></i>Export
+            </a>
             <a href="{{ url_for('users.add') }}" class="btn btn-primary btn-sm">
                 <i class="ti ti-user-plus me-1"></i>Add User
             </a>
@@ -45,6 +48,7 @@
                 <thead>
                     <tr>
                         <th>Username</th>
+                        <th>Password</th>
                         <th>Name/Role</th>
                         <th>Profile</th>
                         <th>Status</th>
@@ -61,6 +65,12 @@
                                 </div>
                                 <strong>{{ user.name }}</strong>
                             </div>
+                        </td>
+                        <td>
+                            <span class="password-mask" data-password="{{ user.password }}">••••••••</span>
+                            <button class="btn btn-sm btn-link p-0 ms-1 toggle-password" type="button" title="Show/Hide Password">
+                                <i class="ti ti-eye"></i>
+                            </button>
                         </td>
                         <td>
                             {{ user.comment or '-' }}
@@ -116,7 +126,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" class="text-center py-5">
+                        <td colspan="6" class="text-center py-5">
                             <i class="ti ti-users-off fs-3 text-muted mb-3"></i>
                             <p class="text-muted">No users found</p>
                         </td>
