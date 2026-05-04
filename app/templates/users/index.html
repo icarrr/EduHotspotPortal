@@ -117,11 +117,13 @@
                                    onclick="return confirm('Reset password for {{ user.name }}?')" title="Reset Password">
                                     <i class="ti ti-key"></i>
                                 </a>
+                                {% if current_user.has_role('admin_it') %}
                                 <a href="{{ url_for('users.reset_counters', username=user.name) }}"
                                    class="btn btn-sm btn-outline-secondary"
                                    onclick="return confirm('Reset counters for {{ user.name }}?')" title="Reset Counters">
                                     <i class="ti ti-refresh"></i>
                                 </a>
+                                {% endif %}
                                 <a href="{{ url_for('users.toggle', username=user.name) }}"
                                    class="btn btn-sm {% if user.disabled == True %}btn-outline-success{% else %}btn-outline-secondary{% endif %}"
                                    title="{% if user.disabled == True %}Enable{% else %}Disable{% endif %}">

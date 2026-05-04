@@ -217,7 +217,8 @@ def import_users():
             return redirect(url_for('users.import_users'))
 
         try:
-            wb = openpyxl.load_workbook(file.stream)
+            file_data = io.BytesIO(file.read())
+            wb = openpyxl.load_workbook(file_data)
             ws = wb.active
 
             mikrotik = get_mikrotik_client()
