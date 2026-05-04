@@ -81,7 +81,7 @@ class MikroTikClient:
             users = self.connection.path('ip', 'hotspot', 'user')
             target_user = None
             for user in users:
-                if user.get('name') == username:
+                if str(user.get('name')) == str(username):
                     target_user = user
                     break
 
@@ -101,7 +101,7 @@ class MikroTikClient:
             users = self.connection.path('ip', 'hotspot', 'user')
             target_user = None
             for user in users:
-                if user.get('name') == username:
+                if str(user.get('name')) == str(username):
                     target_user = user
                     break
 
@@ -171,7 +171,7 @@ class MikroTikClient:
     def _get_user_by_name(self, users_path, username):
         """Helper method to find a user by name"""
         for user in users_path:
-            if user.get('name') == username:
+            if str(user.get('name')) == str(username):
                 return user
         return None
 
