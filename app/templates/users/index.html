@@ -67,7 +67,7 @@
                             </div>
                         </td>
                         <td>
-                            <span class="password-mask" data-password="{{ user.password }}">••••••••</span>
+                            <span class="password-mask" data-password="{{ user.password | default('', true) }}">••••••••</span>
                             <button class="btn btn-sm btn-link p-0 ms-1 toggle-password" type="button" title="Show/Hide Password">
                                 <i class="ti ti-eye"></i>
                             </button>
