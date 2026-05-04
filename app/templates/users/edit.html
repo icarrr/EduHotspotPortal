@@ -59,10 +59,6 @@
                                onclick="return confirm('Reset password for {{ user.name }}?')">
                                 <i class="ti ti-key me-1"></i>Reset Password
                             </a>
-                            <a href="{{ url_for('users.bind_mac', username=user.name) }}"
-                               class="btn btn-sm btn-info">
-                                <i class="ti ti-tag me-1"></i>Bind MAC
-                            </a>
                             <a href="{{ url_for('users.set_expiration', username=user.name) }}"
                                class="btn btn-sm btn-outline-warning">
                                 <i class="ti ti-clock me-1"></i>Set Expiration

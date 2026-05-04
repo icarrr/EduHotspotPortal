@@ -120,10 +120,6 @@
                                    title="{% if user.disabled == True %}Enable{% else %}Disable{% endif %}">
                                     <i class="ti {% if user.disabled == True %}ti-check{% else %}ti-ban{% endif %}"></i>
                                 </a>
-                                <a href="{{ url_for('users.bind_mac', username=user.name) }}"
-                                   class="btn btn-sm btn-outline-primary" title="Bind MAC">
-                                    <i class="ti ti-tag"></i>
-                                </a>
                                 <a href="{{ url_for('users.set_expiration', username=user.name) }}"
                                    class="btn btn-sm btn-outline-warning" title="Set Expiration">
                                     <i class="ti ti-clock"></i>
