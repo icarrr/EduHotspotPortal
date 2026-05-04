@@ -37,7 +37,7 @@ def add():
         username = request.form.get('username')
         password = request.form.get('password') or generate_password()
         role = request.form.get('role', 'siswa')
-        profile = request.form.get('profile', '')
+        profile = role
 
         mikrotik = get_mikrotik_client()
         success, message = mikrotik.add_hotspot_user(username, password, profile, role)
@@ -234,8 +234,7 @@ def import_users():
                     continue
 
                 password = generate_password()
-                profile_map = {rp.role: rp.profile_name for rp in RoleProfile.query.all()}
-                profile = profile_map.get(role, '')
+                profile = role
 
                 success, message = mikrotik.add_hotspot_user(username, password, profile, role)
 
