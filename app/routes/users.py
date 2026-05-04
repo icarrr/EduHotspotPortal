@@ -314,21 +314,29 @@ def export_users():
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = 'Hotspot Users'
-    ws.column_dimensions['A'].width = 20
-    ws.column_dimensions['B'].width = 15
+    ws.column_dimensions['A'].width = 25
+    ws.column_dimensions['B'].width = 20
     ws.column_dimensions['C'].width = 12
     ws.column_dimensions['D'].width = 15
+
+    from openpyxl.styles import numbers
+    ws.column_dimensions['A'].number_format = numbers.FORMAT_TEXT
+    ws.column_dimensions['B'].number_format = numbers.FORMAT_TEXT
 
     ws.append(['username', 'password', 'role', 'profile'])
 
     for user in hotspot_users:
-        username = user.get('name', '')
-        password = user.get('password', '')
+        username = str(user.get('name', ''))
+        password = str(user.get('password', ''))
         comment = user.get('comment', '')
         role = comment.replace('role:', '') if comment.startswith('role:') else ''
         profile = user.get('profile', '')
 
-        ws.append([username, password, role, profile])
+        row_num = ws.max_row + 1
+        ws.cell(row=row_num, column=1, value=username).number_format = numbers.FORMAT_TEXT
+        ws.cell(row=row_num, column=2, value=password).number_format = numbers.FORMAT_TEXT
+        ws.cell(row=row_num, column=3, value=role)
+        ws.cell(row=row_num, column=4, value=profile)
 
     output = io.BytesIO()
     wb.save(output)
