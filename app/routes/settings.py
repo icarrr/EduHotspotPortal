@@ -59,7 +59,13 @@ def test_connection():
     if mikrotik.connect():
         mikrotik.disconnect()
         return jsonify({'success': True, 'message': 'Connection successful'})
-    return jsonify({'success': False, 'message': 'Connection failed'})
+    
+    # Show actual error details
+    return jsonify({
+        'success': False, 
+        'message': f'Connection failed to {mikrotik.host}:{mikrotik.port} (SSL: {mikrotik.use_ssl})',
+        'hint': 'Check: 1) API user enabled, 2) API service running, 3) Firewall rules, 4) Correct credentials'
+    })
 
 
 @bp.route('/role-profile/add', methods=['POST'])

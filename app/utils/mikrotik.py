@@ -2,6 +2,7 @@ from librouteros import connect
 from librouteros.exceptions import LibRouterosError, ConnectionClosed
 from app.models import Setting, AuditLog, db
 from flask import current_app
+import ssl
 
 
 class MikroTikClient:
@@ -20,16 +21,21 @@ class MikroTikClient:
     def connect(self):
         self._load_settings()
         try:
-            self.connection = connect(
-                host=self.host,
-                port=self.port,
-                username=self.username,
-                password=self.password,
-                ssl_wrapper=self.use_ssl
-            )
+            connect_params = {
+                'host': self.host,
+                'port': self.port,
+                'username': self.username,
+                'password': self.password,
+            }
+            
+            if self.use_ssl:
+                connect_params['ssl_wrapper'] = ssl.create_default_context
+            
+            self.connection = connect(**connect_params)
             return True
         except Exception as e:
             current_app.logger.error(f'MikroTik connection failed: {e}')
+            current_app.logger.error(f'Host: {self.host}, Port: {self.port}, SSL: {self.use_ssl}')
             return False
 
     def disconnect(self):
