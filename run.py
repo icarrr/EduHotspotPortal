@@ -1,30 +1,36 @@
 from app import create_app, db
-from config import config
 from app.models import *
+from app.utils.mikrotik import get_mikrotik_client
 
 import threading
 import time
-from datetime import datetime, timezone
-from app.utils.mikrotik import get_mikrotik_client
-
-# Configuration
-CHECK_INTERVAL_HOURS = 1  # Run every 1 hour
-CHECK_INTERVAL_SECONDS = CHECK_INTERVAL_HOURS * 60 * 60
+from datetime import datetime, timezone, timedelta
+import pytz
 
 
-def expire_users():
+STUDENT_CHECK_INTERVAL_MINUTES = 5
+STUDENT_CHECK_INTERVAL_SECONDS = STUDENT_CHECK_INTERVAL_MINUTES * 60
+TRIAL_CHECK_INTERVAL_HOURS = 1
+TRIAL_CHECK_INTERVAL_SECONDS = TRIAL_CHECK_INTERVAL_HOURS * 60 * 60
+
+WIB = pytz.timezone('Asia/Jakarta')
+
+STUDENT_LOGIN_START = 7
+STUDENT_LOGIN_END = 14
+
+
+def expire_trial_users():
     """Check and expire TRIAL users whose expiration date has passed"""
     app = create_app()
 
     with app.app_context():
         now = datetime.now(timezone.utc)
 
-        # Find TRIAL users with expiration date in the past only
         expired_users = HotspotUser.query.filter(
             HotspotUser.expires_at < now,
             HotspotUser.expires_at.isnot(None),
             HotspotUser.status == 'active',
-            HotspotUser.role == 'trial'  # Only expire trial users
+            HotspotUser.role == 'trial'
         ).all()
 
         if not expired_users:
@@ -38,17 +44,14 @@ def expire_users():
 
         for user in expired_users:
             try:
-                # Disable in MikroTik
                 success, message = mikrotik.disable_user(user.username)
 
                 if success:
-                    # Update local DB
                     user.status = 'expired'
                     db.session.commit()
 
-                    # Log the action
                     log = AuditLog(
-                        operator_id=1,  # System user
+                        operator_id=1,
                         action='disable',
                         target_user=user.username,
                         details='Auto-expired (trial user)'
@@ -66,21 +69,142 @@ def expire_users():
         print(f"[{datetime.now(timezone.utc)}] Expiration check complete")
 
 
+def student_time_control():
+    """
+    Enforce student access hours:
+    - 07:00 - 14:00 WIB: Students (profile 'siswa') allowed
+    - After 14:00: Disable siswa users + disconnect active sessions
+    - Before 07:00: Keep siswa users disabled
+    """
+    app = create_app()
+
+    with app.app_context():
+        now_wib = datetime.now(WIB)
+        current_hour = now_wib.hour
+        print(f"\n[{now_wib.strftime('%Y-%m-%d %H:%M:%S WIB')}] Student time control check (hour={current_hour})")
+
+        mikrotik = get_mikrotik_client()
+        if not mikrotik.connect():
+            print("  ✗ MikroTik connection failed")
+            return
+
+        try:
+            all_users = mikrotik.get_hotspot_users()
+            siswa_users = [u for u in all_users if str(u.get('profile')) == 'siswa']
+
+            if current_hour >= STUDENT_LOGIN_END or current_hour < STUDENT_LOGIN_START:
+                print(f"  Outside school hours ({STUDENT_LOGIN_START}:00-{STUDENT_LOGIN_END}:00). Disabling siswa users...")
+
+                disabled_count = 0
+                for user in siswa_users:
+                    username = str(user.get('name'))
+                    if user.get('disabled') == True:
+                        continue
+
+                    success, message = mikrotik.disable_user(username)
+                    if success:
+                        disabled_count += 1
+
+                        local_user = HotspotUser.query.filter_by(username=username).first()
+                        if not local_user:
+                            local_user = HotspotUser(username=username, role='siswa')
+                            db.session.add(local_user)
+
+                        local_user.status = 'time_disabled'
+                        db.session.commit()
+
+                        log = AuditLog(
+                            operator_id=1,
+                            action='disable',
+                            target_user=username,
+                            details='Auto-disabled: outside school hours'
+                        )
+                        db.session.add(log)
+                        db.session.commit()
+
+                        print(f"  ✓ Disabled: {username}")
+                    else:
+                        print(f"  ✗ Failed to disable {username}: {message}")
+
+                active_sessions = mikrotik.get_active_sessions()
+                disconnected_count = 0
+                for session in active_sessions:
+                    session_user = str(session.get('user'))
+                    session_profile = None
+                    for u in all_users:
+                        if str(u.get('name')) == session_user:
+                            session_profile = str(u.get('profile'))
+                            break
+
+                    if session_profile == 'siswa':
+                        session_id = session['.id']
+                        success, message = mikrotik.disconnect_session(session_id)
+                        if success:
+                            disconnected_count += 1
+                            print(f"  ✓ Disconnected session: {session_user}")
+                        else:
+                            print(f"  ✗ Failed to disconnect {session_user}: {message}")
+
+                print(f"  Summary: {disabled_count} disabled, {disconnected_count} sessions disconnected")
+
+            else:
+                print(f"  School hours active ({STUDENT_LOGIN_START}:00-{STUDENT_LOGIN_END}:00). Enabling siswa users...")
+
+                enabled_count = 0
+                for user in siswa_users:
+                    username = str(user.get('name'))
+                    local_user = HotspotUser.query.filter_by(username=username).first()
+
+                    if local_user and local_user.status == 'time_disabled' and user.get('disabled') == True:
+                        success, message = mikrotik.enable_user(username)
+                        if success:
+                            enabled_count += 1
+                            local_user.status = 'active'
+                            db.session.commit()
+
+                            log = AuditLog(
+                                operator_id=1,
+                                action='enable',
+                                target_user=username,
+                                details='Auto-enabled: school hours started'
+                            )
+                            db.session.add(log)
+                            db.session.commit()
+
+                            print(f"  ✓ Enabled: {username}")
+                        else:
+                            print(f"  ✗ Failed to enable {username}: {message}")
+
+                print(f"  Summary: {enabled_count} re-enabled")
+
+        except Exception as e:
+            print(f"  ✗ Error: {str(e)}")
+        finally:
+            mikrotik.disconnect()
+
+
 def scheduler_loop():
-    """Main scheduler loop - runs every CHECK_INTERVAL_HOURS"""
-    print(f"[{datetime.now(timezone.utc)}] Python scheduler started")
-    print(f"Checking every {CHECK_INTERVAL_HOURS} hour(s) for expired trial users...")
+    """Main scheduler loop - runs student check every 5 min, trial check every hour"""
+    print(f"[{datetime.now(WIB).strftime('%Y-%m-%d %H:%M:%S WIB')}] Scheduler started")
+    print(f"Student time control: every {STUDENT_CHECK_INTERVAL_MINUTES} minutes")
+    print(f"Trial user expiration: every {TRIAL_CHECK_INTERVAL_HOURS} hour(s)")
     print("-" * 60)
+
+    last_trial_check = time.time()
 
     while True:
         try:
-            expire_users()
-        except Exception as e:
-            print(f"[{datetime.now(timezone.utc)}] Scheduler error: {str(e)}")
+            student_time_control()
 
-        # Wait for next check
-        print(f"\nNext check in {CHECK_INTERVAL_HOURS} hour(s)...")
-        time.sleep(CHECK_INTERVAL_SECONDS)
+            now = time.time()
+            if now - last_trial_check >= TRIAL_CHECK_INTERVAL_SECONDS:
+                expire_trial_users()
+                last_trial_check = now
+        except Exception as e:
+            print(f"[{datetime.now(WIB)}] Scheduler error: {str(e)}")
+
+        print(f"\nNext student check in {STUDENT_CHECK_INTERVAL_MINUTES} minutes...")
+        time.sleep(STUDENT_CHECK_INTERVAL_SECONDS)
 
 
 if __name__ == '__main__':
@@ -88,7 +212,6 @@ if __name__ == '__main__':
 
     with app.app_context():
         db.create_all()
-        # Create default admin if not exists
         if not Operator.query.filter_by(username='admin').first():
             import os
             default_password = os.getenv('DEFAULT_ADMIN_PASSWORD', 'admin123')
@@ -98,10 +221,8 @@ if __name__ == '__main__':
             db.session.commit()
             print(f'Default admin created: admin/{default_password}')
 
-    # Start scheduler in background thread
-    print("Starting scheduler in background thread...")
+    import pytz
     scheduler_thread = threading.Thread(target=scheduler_loop, daemon=True)
     scheduler_thread.start()
 
-    # Run Flask app in main thread
     app.run(host='0.0.0.0', port=5000, debug=True)
