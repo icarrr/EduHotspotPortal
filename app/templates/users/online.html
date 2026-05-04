@@ -25,8 +25,8 @@
                         <th>User</th>
                         <th>IP Address</th>
                         <th>MAC Address</th>
-                        <th>Login Time</th>
-                        <th>Duration</th>
+                        <th>Uptime</th>
+                        <th>Idle Time</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -38,26 +38,26 @@
                                 <div class="avatar avatar-sm bg-success-lt me-2">
                                     <i class="ti ti-user"></i>
                                 </div>
-                                <strong>{{ session.username }}</strong>
+                                <strong>{{ session.user }}</strong>
                             </div>
                         </td>
                         <td>
-                            <code class="bg-dark-lt px-2 py-1 rounded">{{ session.ip }}</code>
+                            <code class="bg-dark-lt px-2 py-1 rounded">{{ session.address }}</code>
                         </td>
                         <td>
-                            <span class="badge bg-info-lt">{{ session.mac }}</span>
+                            <span class="badge bg-info-lt">{{ session['mac-address'] }}</span>
                         </td>
-                        <td>{{ session.login_time }}</td>
+                        <td>{{ session.uptime }}</td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <i class="ti ti-clock me-1 text-muted"></i>
-                                {{ session.duration }}
+                                {{ session['idle-time'] }}
                             </div>
                         </td>
                         <td>
                             <a href="{{ url_for('users.disconnect', session_id=session['.id']) }}"
                                class="btn btn-sm btn-outline-danger"
-                               onclick="return confirm('Disconnect {{ session.username }}?')">
+                               onclick="return confirm('Disconnect {{ session.user }}?')">
                                 <i class="ti ti-logout me-1"></i>Disconnect
                             </a>
                         </td>
