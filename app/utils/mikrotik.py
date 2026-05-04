@@ -77,6 +77,7 @@ class MikroTikClient:
             if not self.connect():
                 return False, 'Connection failed'
         try:
+            # Find user by iterating through all users
             users = self.connection.path('ip', 'hotspot', 'user')
             target_user = None
             for user in users:
@@ -85,7 +86,8 @@ class MikroTikClient:
                     break
 
             if target_user:
-                list(self.connection.rawCmd('/ip/hotspot/user/remove', f'=.id={target_user[".id"]}'))
+                user_id = target_user['.id']
+                list(self.connection.rawCmd('/ip/hotspot/user/remove', f'=.id={user_id}'))
                 return True, 'User deleted successfully'
             return False, 'User not found'
         except (LibRouterosError, ConnectionClosed) as e:
@@ -122,27 +124,6 @@ class MikroTikClient:
             # Execute command
             list(self.connection.rawCmd(*cmd))
             return True, 'User updated successfully'
-        except (LibRouterosError, ConnectionClosed) as e:
-            return False, str(e)
-
-    def delete_hotspot_user(self, username):
-        if not self.connection:
-            if not self.connect():
-                return False, 'Connection failed'
-        try:
-            users = self.connection.path('ip', 'hotspot', 'user')
-            target_user = None
-            for user in users:
-                if user.get('name') == username:
-                    target_user = user
-                    break
-
-            if target_user:
-                api = self.connection.api()
-                api('/ip/hotspot/user/remove')
-                api(f'=.id={target_user[".id"]}')
-                return True, 'User deleted successfully'
-            return False, 'User not found'
         except (LibRouterosError, ConnectionClosed) as e:
             return False, str(e)
 
