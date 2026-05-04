@@ -1,6 +1,5 @@
 from librouteros import connect
 from librouteros.exceptions import LibRouterosError, ConnectionClosed
-from librouteros.query import Key
 from app.models import Setting, AuditLog, db
 from flask import current_app
 import ssl
@@ -84,21 +83,32 @@ class MikroTikClient:
                 return False, 'Connection failed'
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user_query = list(users.select('.id', 'name').where(Key('name') == username))
-            if user_query:
-                user_id = user_query[0]['.id']
-                update_data = {'.id': user_id}
-                if 'password' in kwargs:
-                    update_data['password'] = kwargs['password']
-                if 'profile' in kwargs:
-                    update_data['profile'] = kwargs['profile']
-                if 'disabled' in kwargs:
-                    update_data['disabled'] = kwargs['disabled']
-                if 'mac_address' in kwargs:
-                    update_data['mac-address'] = kwargs['mac_address']
-                users.set(**update_data)
-                return True, 'User updated successfully'
-            return False, 'User not found'
+            # Find user by iterating through all users
+            target_user = None
+            for user in users:
+                if user.get('name') == username:
+                    target_user = user
+                    break
+
+            if not target_user:
+                return False, 'User not found'
+
+            user_id = target_user['.id']
+            
+            # Build update parameters
+            params = [f'=.id={user_id}']
+            if 'password' in kwargs:
+                params.append(f'=password={kwargs["password"]}')
+            if 'profile' in kwargs:
+                params.append(f'=profile={kwargs["profile"]}')
+            if 'disabled' in kwargs:
+                params.append(f'=disabled={kwargs["disabled"]}')
+            if 'mac_address' in kwargs:
+                params.append(f'=mac-address={kwargs["mac_address"]}')
+
+            # Execute update via raw API
+            self.connection('/ip/hotspot/user/set', *params)
+            return True, 'User updated successfully'
         except (LibRouterosError, ConnectionClosed) as e:
             return False, str(e)
 
@@ -108,10 +118,14 @@ class MikroTikClient:
                 return False, 'Connection failed'
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user_query = list(users.select('.id', 'name').where(Key('name') == username))
-            if user_query:
-                user_id = user_query[0]['.id']
-                users.remove(user_id)
+            target_user = None
+            for user in users:
+                if user.get('name') == username:
+                    target_user = user
+                    break
+
+            if target_user:
+                users.remove(target_user['.id'])
                 return True, 'User deleted successfully'
             return False, 'User not found'
         except (LibRouterosError, ConnectionClosed) as e:
@@ -159,6 +173,13 @@ class MikroTikClient:
             current_app.logger.error(f'Failed to get profiles: {e}')
             return []
 
+    def _get_user_by_name(self, users_path, username):
+        """Helper method to find a user by name"""
+        for user in users_path:
+            if user.get('name') == username:
+                return user
+        return None
+
     def bind_mac_to_user(self, username, mac_address):
         """Bind MAC address to hotspot user for device binding"""
         if not self.connection:
@@ -166,10 +187,13 @@ class MikroTikClient:
                 return False, 'Connection failed'
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user_query = list(users.select('.id', 'name').where(Key('name') == username))
-            if user_query:
-                user_id = user_query[0]['.id']
-                users.set(**{'.id': user_id, 'mac-address': mac_address})
+            target_user = self._get_user_by_name(users, username)
+            
+            if target_user:
+                user_id = target_user['.id']
+                self.connection('/ip/hotspot/user/set',
+                               f'=.id={user_id}',
+                               f'=mac-address={mac_address}')
                 return True, 'MAC address bound successfully'
             return False, 'User not found'
         except (LibRouterosError, ConnectionClosed) as e:
@@ -182,10 +206,13 @@ class MikroTikClient:
                 return False, 'Connection failed'
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user_query = list(users.select('.id', 'name').where(Key('name') == username))
-            if user_query:
-                user_id = user_query[0]['.id']
-                users.set(**{'.id': user_id, 'mac-address': ''})
+            target_user = self._get_user_by_name(users, username)
+            
+            if target_user:
+                user_id = target_user['.id']
+                self.connection('/ip/hotspot/user/set',
+                               f'=.id={user_id}',
+                               '=mac-address=')
                 return True, 'MAC address unbound successfully'
             return False, 'User not found'
         except (LibRouterosError, ConnectionClosed) as e:
@@ -198,9 +225,10 @@ class MikroTikClient:
                 return None
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user_query = list(users.select('mac-address', 'name').where(Key('name') == username))
-            if user_query and user_query[0].get('mac-address'):
-                return user_query[0]['mac-address']
+            target_user = self._get_user_by_name(users, username)
+            
+            if target_user and target_user.get('mac-address'):
+                return target_user['mac-address']
             return None
         except (LibRouterosError, ConnectionClosed) as e:
             current_app.logger.error(f'Failed to get user MAC binding: {e}')
