@@ -62,7 +62,7 @@ class MikroTikClient:
             if not self.connect():
                 return False, 'Connection failed'
         try:
-            cmd = ['/ip/hotspot/user/add', f'=name={username}', f'=password={password}', '=disabled=no']
+            cmd = ['/ip/hotspot/user/add', f'=name={username}', f'=password={password}', '=disabled=no', '=server=hotspot1']
             if profile:
                 cmd.append(f'=profile={profile}')
             if role:

@@ -295,7 +295,7 @@ def download_template():
     ws.append(['username', 'nama', 'role'])
     ws.append(['12345', 'Budi Santoso', 'siswa'])
     ws.append(['67890', 'Siti Nurhaliza', 'guru'])
-    ws.append(['11111', 'Ahmad Staff', 'staff'])
+    ws.append(['11111', 'Ahmad Staff', 'trial'])
 
     output = io.BytesIO()
     wb.save(output)
