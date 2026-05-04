@@ -10,6 +10,12 @@
             <i class="ti ti-users me-2"></i>Hotspot Users
         </h3>
         <div class="card-tools">
+            <form method="POST" action="{{ url_for('users.bulk_delete') }}" id="bulk-delete-form" style="display: inline;">
+                <button type="submit" class="btn btn-danger btn-sm" id="bulk-delete-btn" disabled
+                        onclick="return confirm('Delete selected users?')">
+                    <i class="ti ti-trash-x me-1"></i>Delete Selected (<span id="selected-count">0</span>)
+                </button>
+            </form>
             <a href="{{ url_for('users.export_users') }}" class="btn btn-info btn-sm">
                 <i class="ti ti-download me-1"></i>Export
             </a>
@@ -47,6 +53,9 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th style="width: 40px;">
+                            <input type="checkbox" id="select-all">
+                        </th>
                         <th>Username</th>
                         <th>Password</th>
                         <th>Name/Role</th>
@@ -58,6 +67,9 @@
                 <tbody>
                     {% for user in users %}
                     <tr>
+                        <td>
+                            <input type="checkbox" class="user-checkbox" value="{{ user.name }}">
+                        </td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <div class="avatar avatar-sm bg-primary-lt me-2">
@@ -126,7 +138,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="text-center py-5">
+                        <td colspan="7" class="text-center py-5">
                             <i class="ti ti-users-off fs-3 text-muted mb-3"></i>
                             <p class="text-muted">No users found</p>
                         </td>

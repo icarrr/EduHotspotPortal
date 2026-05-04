@@ -94,6 +94,39 @@ def delete(username):
     return redirect(url_for('users.index'))
 
 
+@bp.route('/bulk-delete', methods=['POST'])
+@login_required
+@operator_required
+def bulk_delete():
+    usernames = request.form.getlist('usernames')
+    if not usernames:
+        flash('No users selected', 'warning')
+        return redirect(url_for('users.index'))
+
+    mikrotik = get_mikrotik_client()
+    deleted = 0
+    failed = 0
+
+    for username in usernames:
+        success, message = mikrotik.delete_hotspot_user(username)
+        if success:
+            deleted += 1
+            log = AuditLog(operator_id=current_user.id, action='delete',
+                          target_user=username, details='Bulk delete')
+            db.session.add(log)
+        else:
+            failed += 1
+
+    db.session.commit()
+
+    if deleted > 0:
+        flash(f'{deleted} user(s) deleted successfully', 'success')
+    if failed > 0:
+        flash(f'{failed} user(s) failed to delete', 'danger')
+
+    return redirect(url_for('users.index'))
+
+
 @bp.route('/reset-password/<username>')
 @login_required
 @operator_required
