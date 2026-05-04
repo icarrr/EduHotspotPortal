@@ -40,7 +40,7 @@
                     <div class="mb-3">
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" name="enabled"
-                                   id="enabled" {% if user.disabled != 'true' %}checked{% endif %}>
+                                   id="enabled" {% if user.disabled != True %}checked{% endif %}>
                             <label class="form-check-label fw-500" for="enabled">
                                 <i class="ti ti-circle-check me-1"></i>User Enabled
                             </label>

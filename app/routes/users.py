@@ -21,8 +21,8 @@ def index():
 
     if search:
         hotspot_users = [u for u in hotspot_users
-                        if search in u.get('name', '').lower() or
-                        search in u.get('comment', '').lower()]
+                        if search in str(u.get('name', '')).lower() or
+                        search in str(u.get('comment', '')).lower()]
         if not hotspot_users:
             flash(f'No users found for "{search}"', 'info')
 
@@ -63,7 +63,7 @@ def edit(username):
     user = None
     users = mikrotik.get_hotspot_users()
     for u in users:
-        if u.get('name') == username:
+        if str(u.get('name')) == str(username):
             user = u
             break
 
@@ -148,8 +148,8 @@ def toggle(username):
     mikrotik = get_mikrotik_client()
     users = mikrotik.get_hotspot_users()
     for u in users:
-        if u.get('name') == username:
-            if u.get('disabled') == 'true':
+        if str(u.get('name')) == str(username):
+            if u.get('disabled') == True:
                 mikrotik.enable_user(username)
                 flash(f'User {username} enabled', 'success')
             else:

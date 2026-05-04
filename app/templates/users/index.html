@@ -94,7 +94,7 @@
                             <code class="bg-dark-lt px-2 py-1 rounded">{{ user.profile or '-' }}</code>
                         </td>
                         <td>
-                            {% if user.disabled == 'true' %}
+                            {% if user.disabled == True %}
                                 <span class="badge bg-danger-lt">
                                     <i class="ti ti-circle-off me-1"></i>Disabled
                                 </span>
@@ -116,9 +116,9 @@
                                     <i class="ti ti-key"></i>
                                 </a>
                                 <a href="{{ url_for('users.toggle', username=user.name) }}"
-                                   class="btn btn-sm {% if user.disabled == 'true' %}btn-outline-success{% else %}btn-outline-secondary{% endif %}"
-                                   title="{% if user.disabled == 'true' %}Enable{% else %}Disable{% endif %}">
-                                    <i class="ti {% if user.disabled == 'true' %}ti-check{% else %}ti-ban{% endif %}"></i>
+                                   class="btn btn-sm {% if user.disabled == True %}btn-outline-success{% else %}btn-outline-secondary{% endif %}"
+                                   title="{% if user.disabled == True %}Enable{% else %}Disable{% endif %}">
+                                    <i class="ti {% if user.disabled == True %}ti-check{% else %}ti-ban{% endif %}"></i>
                                 </a>
                                 <a href="{{ url_for('users.bind_mac', username=user.name) }}"
                                    class="btn btn-sm btn-outline-primary" title="Bind MAC">
