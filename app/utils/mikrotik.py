@@ -83,16 +83,19 @@ class MikroTikClient:
                 return False, 'Connection failed'
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user = users.get(name=username)
-            if user:
-                update_data = {'id': user[0]['.id']}
+            user_query = list(users.select('.id', 'name').where(name=username))
+            if user_query:
+                user_id = user_query[0]['.id']
+                update_data = {'.id': user_id}
                 if 'password' in kwargs:
                     update_data['password'] = kwargs['password']
                 if 'profile' in kwargs:
                     update_data['profile'] = kwargs['profile']
                 if 'disabled' in kwargs:
                     update_data['disabled'] = kwargs['disabled']
-                users.update(**update_data)
+                if 'mac_address' in kwargs:
+                    update_data['mac-address'] = kwargs['mac_address']
+                users.set(**update_data)
                 return True, 'User updated successfully'
             return False, 'User not found'
         except (LibRouterosError, ConnectionClosed) as e:
@@ -104,9 +107,10 @@ class MikroTikClient:
                 return False, 'Connection failed'
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user = users.get(name=username)
-            if user:
-                users.remove(user[0]['.id'])
+            user_query = list(users.select('.id', 'name').where(name=username))
+            if user_query:
+                user_id = user_query[0]['.id']
+                users.remove(user_id)
                 return True, 'User deleted successfully'
             return False, 'User not found'
         except (LibRouterosError, ConnectionClosed) as e:
@@ -161,9 +165,10 @@ class MikroTikClient:
                 return False, 'Connection failed'
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user = users.get(name=username)
-            if user:
-                users.update(id=user[0]['.id'], mac_address=mac_address)
+            user_query = list(users.select('.id', 'name').where(name=username))
+            if user_query:
+                user_id = user_query[0]['.id']
+                users.set(**{'.id': user_id, 'mac-address': mac_address})
                 return True, 'MAC address bound successfully'
             return False, 'User not found'
         except (LibRouterosError, ConnectionClosed) as e:
@@ -176,9 +181,10 @@ class MikroTikClient:
                 return False, 'Connection failed'
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user = users.get(name=username)
-            if user:
-                users.update(id=user[0]['.id'], mac_address='')
+            user_query = list(users.select('.id', 'name').where(name=username))
+            if user_query:
+                user_id = user_query[0]['.id']
+                users.set(**{'.id': user_id, 'mac-address': ''})
                 return True, 'MAC address unbound successfully'
             return False, 'User not found'
         except (LibRouterosError, ConnectionClosed) as e:
@@ -191,9 +197,9 @@ class MikroTikClient:
                 return None
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user = users.get(name=username)
-            if user and user[0].get('mac_address'):
-                return user[0]['mac_address']
+            user_query = list(users.select('mac-address', 'name').where(name=username))
+            if user_query and user_query[0].get('mac-address'):
+                return user_query[0]['mac-address']
             return None
         except (LibRouterosError, ConnectionClosed) as e:
             current_app.logger.error(f'Failed to get user MAC binding: {e}')
