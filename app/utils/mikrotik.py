@@ -1,5 +1,6 @@
 from librouteros import connect
 from librouteros.exceptions import LibRouterosError, ConnectionClosed
+from librouteros.query import Key
 from app.models import Setting, AuditLog, db
 from flask import current_app
 import ssl
@@ -83,7 +84,7 @@ class MikroTikClient:
                 return False, 'Connection failed'
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user_query = list(users.select('.id', 'name').where(name=username))
+            user_query = list(users.select('.id', 'name').where(Key('name') == username))
             if user_query:
                 user_id = user_query[0]['.id']
                 update_data = {'.id': user_id}
@@ -107,7 +108,7 @@ class MikroTikClient:
                 return False, 'Connection failed'
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user_query = list(users.select('.id', 'name').where(name=username))
+            user_query = list(users.select('.id', 'name').where(Key('name') == username))
             if user_query:
                 user_id = user_query[0]['.id']
                 users.remove(user_id)
@@ -165,7 +166,7 @@ class MikroTikClient:
                 return False, 'Connection failed'
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user_query = list(users.select('.id', 'name').where(name=username))
+            user_query = list(users.select('.id', 'name').where(Key('name') == username))
             if user_query:
                 user_id = user_query[0]['.id']
                 users.set(**{'.id': user_id, 'mac-address': mac_address})
@@ -181,7 +182,7 @@ class MikroTikClient:
                 return False, 'Connection failed'
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user_query = list(users.select('.id', 'name').where(name=username))
+            user_query = list(users.select('.id', 'name').where(Key('name') == username))
             if user_query:
                 user_id = user_query[0]['.id']
                 users.set(**{'.id': user_id, 'mac-address': ''})
@@ -197,7 +198,7 @@ class MikroTikClient:
                 return None
         try:
             users = self.connection.path('ip', 'hotspot', 'user')
-            user_query = list(users.select('mac-address', 'name').where(name=username))
+            user_query = list(users.select('mac-address', 'name').where(Key('name') == username))
             if user_query and user_query[0].get('mac-address'):
                 return user_query[0]['mac-address']
             return None
