@@ -62,16 +62,32 @@ class MikroTikClient:
             if not self.connect():
                 return False, 'Connection failed'
         try:
-            api = self.connection.api()
-            api('/ip/hotspot/user/add')
-            api(f'=name={username}')
-            api(f'=password={password}')
-            api('=disabled=no')
+            cmd = ['/ip/hotspot/user/add', f'=name={username}', f'=password={password}', '=disabled=no']
             if profile:
-                api(f'=profile={profile}')
+                cmd.append(f'=profile={profile}')
             if role:
-                api(f'=comment=role:{role}')
+                cmd.append(f'=comment=role:{role}')
+            list(self.connection.rawCmd(*cmd))
             return True, 'User added successfully'
+        except (LibRouterosError, ConnectionClosed) as e:
+            return False, str(e)
+
+    def delete_hotspot_user(self, username):
+        if not self.connection:
+            if not self.connect():
+                return False, 'Connection failed'
+        try:
+            users = self.connection.path('ip', 'hotspot', 'user')
+            target_user = None
+            for user in users:
+                if user.get('name') == username:
+                    target_user = user
+                    break
+
+            if target_user:
+                list(self.connection.rawCmd('/ip/hotspot/user/remove', f'=.id={target_user[".id"]}'))
+                return True, 'User deleted successfully'
+            return False, 'User not found'
         except (LibRouterosError, ConnectionClosed) as e:
             return False, str(e)
 
@@ -92,19 +108,19 @@ class MikroTikClient:
 
             user_id = target_user['.id']
             
-            # Use proper API call syntax
-            api = self.connection.api()
-            api('/ip/hotspot/user/set')
-            api(f'=.id={user_id}')
+            # Build command
+            cmd = ['/ip/hotspot/user/set', f'=.id={user_id}']
             if 'password' in kwargs:
-                api(f'=password={kwargs["password"]}')
+                cmd.append(f'=password={kwargs["password"]}')
             if 'profile' in kwargs:
-                api(f'=profile={kwargs["profile"]}')
+                cmd.append(f'=profile={kwargs["profile"]}')
             if 'disabled' in kwargs:
-                api(f'=disabled={kwargs["disabled"]}')
+                cmd.append(f'=disabled={kwargs["disabled"]}')
             if 'mac_address' in kwargs:
-                api(f'=mac-address={kwargs["mac_address"]}')
+                cmd.append(f'=mac-address={kwargs["mac_address"]}')
             
+            # Execute command
+            list(self.connection.rawCmd(*cmd))
             return True, 'User updated successfully'
         except (LibRouterosError, ConnectionClosed) as e:
             return False, str(e)
@@ -155,9 +171,7 @@ class MikroTikClient:
             if not self.connect():
                 return False, 'Connection failed'
         try:
-            api = self.connection.api()
-            api('/ip/hotspot/active/remove')
-            api(f'=.id={session_id}')
+            list(self.connection.rawCmd('/ip/hotspot/active/remove', f'=.id={session_id}'))
             return True, 'Session disconnected'
         except (LibRouterosError, ConnectionClosed) as e:
             return False, str(e)
@@ -191,10 +205,9 @@ class MikroTikClient:
             
             if target_user:
                 user_id = target_user['.id']
-                api = self.connection.api()
-                api('/ip/hotspot/user/set')
-                api(f'=.id={user_id}')
-                api(f'=mac-address={mac_address}')
+                list(self.connection.rawCmd('/ip/hotspot/user/set',
+                                            f'=.id={user_id}',
+                                            f'=mac-address={mac_address}'))
                 return True, 'MAC address bound successfully'
             return False, 'User not found'
         except (LibRouterosError, ConnectionClosed) as e:
@@ -211,10 +224,9 @@ class MikroTikClient:
             
             if target_user:
                 user_id = target_user['.id']
-                api = self.connection.api()
-                api('/ip/hotspot/user/set')
-                api(f'=.id={user_id}')
-                api('=mac-address=')
+                list(self.connection.rawCmd('/ip/hotspot/user/set',
+                                            f'=.id={user_id}',
+                                            '=mac-address='))
                 return True, 'MAC address unbound successfully'
             return False, 'User not found'
         except (LibRouterosError, ConnectionClosed) as e:
