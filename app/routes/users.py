@@ -455,5 +455,5 @@ def set_expiration(username):
                          current_expires=local_user.expires_at)
 
 
-def generate_password(length=8):
+def generate_password(length=6):
     return ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
