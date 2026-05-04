@@ -229,6 +229,27 @@ class MikroTikClient:
             current_app.logger.error(f'Failed to get user MAC binding: {e}')
             return None
 
+    def reset_user_counters(self, username):
+        """Reset hotspot user counters (bytes-in, bytes-out, etc.)"""
+        if not self.connection:
+            if not self.connect():
+                return False, 'Connection failed'
+        try:
+            users = self.connection.path('ip', 'hotspot', 'user')
+            target_user = None
+            for user in users:
+                if str(user.get('name')) == str(username):
+                    target_user = user
+                    break
+
+            if target_user:
+                user_id = target_user['.id']
+                list(self.connection.rawCmd('/ip/hotspot/user/reset-counters', f'=.id={user_id}'))
+                return True, 'Counters reset successfully'
+            return False, 'User not found'
+        except (LibRouterosError, ConnectionClosed) as e:
+            return False, str(e)
+
 
 def get_mikrotik_client():
     return MikroTikClient()

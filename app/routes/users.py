@@ -83,7 +83,7 @@ def edit(username):
 
 @bp.route('/delete/<username>')
 @login_required
-@operator_required
+@admin_required
 def delete(username):
     mikrotik = get_mikrotik_client()
     success, message = mikrotik.delete_hotspot_user(username)
@@ -96,7 +96,7 @@ def delete(username):
 
 @bp.route('/bulk-delete', methods=['POST'])
 @login_required
-@operator_required
+@admin_required
 def bulk_delete():
     usernames = request.form.getlist('usernames')
     if not usernames:
@@ -138,6 +138,23 @@ def reset_password(username):
         flash(f'Password for {username} reset to: {new_password}', 'success')
     else:
         flash(f'Failed to reset password: {message}', 'danger')
+    return redirect(url_for('users.index'))
+
+
+@bp.route('/reset-counters/<username>')
+@login_required
+@operator_required
+def reset_counters(username):
+    mikrotik = get_mikrotik_client()
+    success, message = mikrotik.reset_user_counters(username)
+    if success:
+        flash(f'Counters reset for {username}', 'success')
+        log = AuditLog(operator_id=current_user.id, action='update',
+                      target_user=username, details='Counters reset')
+        db.session.add(log)
+        db.session.commit()
+    else:
+        flash(f'Failed to reset counters: {message}', 'danger')
     return redirect(url_for('users.index'))
 
 

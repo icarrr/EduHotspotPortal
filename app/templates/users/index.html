@@ -10,12 +10,14 @@
             <i class="ti ti-users me-2"></i>Hotspot Users
         </h3>
         <div class="card-tools">
+            {% if current_user.has_role('admin_it') %}
             <form method="POST" action="{{ url_for('users.bulk_delete') }}" id="bulk-delete-form" style="display: inline;">
                 <button type="submit" class="btn btn-danger btn-sm" id="bulk-delete-btn" disabled
                         onclick="return confirm('Delete selected users?')">
                     <i class="ti ti-trash-x me-1"></i>Delete Selected (<span id="selected-count">0</span>)
                 </button>
             </form>
+            {% endif %}
             <a href="{{ url_for('users.export_users') }}" class="btn btn-info btn-sm">
                 <i class="ti ti-download me-1"></i>Export
             </a>
@@ -115,6 +117,11 @@
                                    onclick="return confirm('Reset password for {{ user.name }}?')" title="Reset Password">
                                     <i class="ti ti-key"></i>
                                 </a>
+                                <a href="{{ url_for('users.reset_counters', username=user.name) }}"
+                                   class="btn btn-sm btn-outline-secondary"
+                                   onclick="return confirm('Reset counters for {{ user.name }}?')" title="Reset Counters">
+                                    <i class="ti ti-refresh"></i>
+                                </a>
                                 <a href="{{ url_for('users.toggle', username=user.name) }}"
                                    class="btn btn-sm {% if user.disabled == True %}btn-outline-success{% else %}btn-outline-secondary{% endif %}"
                                    title="{% if user.disabled == True %}Enable{% else %}Disable{% endif %}">
@@ -124,11 +131,13 @@
                                    class="btn btn-sm btn-outline-warning" title="Set Expiration">
                                     <i class="ti ti-clock"></i>
                                 </a>
+                                {% if current_user.has_role('admin_it') %}
                                 <a href="{{ url_for('users.delete', username=user.name) }}"
                                    class="btn btn-sm btn-outline-danger"
                                    onclick="return confirm('Delete user {{ user.name }}?')" title="Delete">
                                     <i class="ti ti-trash"></i>
                                 </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
