@@ -71,16 +71,23 @@ def expire_trial_users():
 
 def student_time_control():
     """
-    Enforce student access hours:
+    Enforce student access hours (if enabled in settings):
     - >= 07:00 WITA: Enable ALL siswa users
     - >= 14:00 WITA: Disable ALL siswa users + disconnect active sessions
     """
     app = create_app()
 
     with app.app_context():
-        now_wib = datetime.now(WITA)
-        current_hour = now_wib.hour
-        print(f"\n[{now_wib.strftime('%Y-%m-%d %H:%M:%S WITA')}] Student time control check (hour={current_hour})")
+        # Check if student time control is enabled
+        from app.models import Setting
+        enabled_setting = Setting.query.filter_by(key='student_time_control_enabled').first()
+        if not enabled_setting or enabled_setting.value != 'true':
+            print("  Student time control is DISABLED (toggle in Settings)")
+            return
+
+        now_wita = datetime.now(WITA)
+        current_hour = now_wita.hour
+        print(f"\n[{now_wita.strftime('%Y-%m-%d %H:%M:%S WITA')}] Student time control check (hour={current_hour})")
 
         mikrotik = get_mikrotik_client()
         if not mikrotik.connect():

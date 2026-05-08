@@ -16,7 +16,8 @@ def index():
             'mikrotik_host': request.form.get('mikrotik_host'),
             'mikrotik_port': request.form.get('mikrotik_port'),
             'mikrotik_user': request.form.get('mikrotik_user'),
-            'mikrotik_use_ssl': 'true' if request.form.get('mikrotik_use_ssl') else 'false'
+            'mikrotik_use_ssl': 'true' if request.form.get('mikrotik_use_ssl') else 'false',
+            'student_time_control_enabled': 'true' if request.form.get('student_time_control_enabled') else 'false'
         }
 
         for key, value in settings.items():
@@ -48,7 +49,9 @@ def index():
 
     settings = {s.key: s.value for s in Setting.query.all()}
     role_profiles = RoleProfile.query.all()
-    return render_template('settings/index.html', settings=settings, role_profiles=role_profiles)
+    student_time_control_enabled = settings.get('student_time_control_enabled', 'false') == 'true'
+    return render_template('settings/index.html', settings=settings, role_profiles=role_profiles,
+                           student_time_control_enabled=student_time_control_enabled)
 
 
 @bp.route('/test-connection')
