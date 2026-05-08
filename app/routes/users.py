@@ -181,8 +181,29 @@ def toggle(username):
 @operator_required
 def online_sessions():
     mikrotik = get_mikrotik_client()
-    sessions = mikrotik.get_active_sessions()
-    return render_template('users/online.html', sessions=sessions)
+    active_sessions = mikrotik.get_active_sessions()
+    hosts = mikrotik.get_hosts()
+
+    logged_in_macs = {s.get('mac-address', '') for s in active_sessions}
+    merged_sessions = []
+    for h in hosts:
+        mac = h.get('mac-address', '')
+        for s in active_sessions:
+            if s.get('mac-address', '') == mac:
+                h['user'] = s.get('user')
+                h['address'] = s.get('address')
+                h['uptime'] = s.get('uptime')
+                h['idle-time'] = s.get('idle-time')
+                h['.id'] = s['.id']
+                h['logged_in'] = True
+                merged_sessions.append(h)
+                break
+        else:
+            h['user'] = None
+            h['logged_in'] = False
+            merged_sessions.append(h)
+
+    return render_template('users/online.html', sessions=merged_sessions)
 
 
 @bp.route('/disconnect/<session_id>')

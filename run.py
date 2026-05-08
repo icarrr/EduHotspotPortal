@@ -13,7 +13,7 @@ STUDENT_CHECK_INTERVAL_SECONDS = STUDENT_CHECK_INTERVAL_MINUTES * 60
 TRIAL_CHECK_INTERVAL_HOURS = 1
 TRIAL_CHECK_INTERVAL_SECONDS = TRIAL_CHECK_INTERVAL_HOURS * 60 * 60
 
-WIB = pytz.timezone('Asia/Jakarta')
+WITA = pytz.timezone('Asia/Makassar')
 
 STUDENT_LOGIN_START = 7
 STUDENT_LOGIN_END = 14
@@ -72,16 +72,15 @@ def expire_trial_users():
 def student_time_control():
     """
     Enforce student access hours:
-    - 07:00 - 14:00 WIB: Students (profile 'siswa') allowed
-    - After 14:00: Disable siswa users + disconnect active sessions
-    - Before 07:00: Keep siswa users disabled
+    - >= 07:00 WITA: Enable ALL siswa users
+    - >= 14:00 WITA: Disable ALL siswa users + disconnect active sessions
     """
     app = create_app()
 
     with app.app_context():
-        now_wib = datetime.now(WIB)
+        now_wib = datetime.now(WITA)
         current_hour = now_wib.hour
-        print(f"\n[{now_wib.strftime('%Y-%m-%d %H:%M:%S WIB')}] Student time control check (hour={current_hour})")
+        print(f"\n[{now_wib.strftime('%Y-%m-%d %H:%M:%S WITA')}] Student time control check (hour={current_hour})")
 
         mikrotik = get_mikrotik_client()
         if not mikrotik.connect():
@@ -93,7 +92,7 @@ def student_time_control():
             siswa_users = [u for u in all_users if str(u.get('profile')) == 'siswa']
 
             if current_hour >= STUDENT_LOGIN_END or current_hour < STUDENT_LOGIN_START:
-                print(f"  Outside school hours ({STUDENT_LOGIN_START}:00-{STUDENT_LOGIN_END}:00). Disabling siswa users...")
+                print(f"  Outside school hours ({STUDENT_LOGIN_START}:00-{STUDENT_LOGIN_END}:00). Disabling ALL siswa users...")
 
                 disabled_count = 0
                 for user in siswa_users:
@@ -148,17 +147,21 @@ def student_time_control():
                 print(f"  Summary: {disabled_count} disabled, {disconnected_count} sessions disconnected")
 
             else:
-                print(f"  School hours active ({STUDENT_LOGIN_START}:00-{STUDENT_LOGIN_END}:00). Enabling siswa users...")
+                print(f"  School hours ({STUDENT_LOGIN_START}:00-{STUDENT_LOGIN_END}:00). Enabling ALL siswa users...")
 
                 enabled_count = 0
                 for user in siswa_users:
                     username = str(user.get('name'))
-                    local_user = HotspotUser.query.filter_by(username=username).first()
-
-                    if local_user and local_user.status == 'time_disabled' and user.get('disabled') == True:
+                    if user.get('disabled') == True:
                         success, message = mikrotik.enable_user(username)
                         if success:
                             enabled_count += 1
+
+                            local_user = HotspotUser.query.filter_by(username=username).first()
+                            if not local_user:
+                                local_user = HotspotUser(username=username, role='siswa')
+                                db.session.add(local_user)
+
                             local_user.status = 'active'
                             db.session.commit()
 
@@ -174,8 +177,10 @@ def student_time_control():
                             print(f"  ✓ Enabled: {username}")
                         else:
                             print(f"  ✗ Failed to enable {username}: {message}")
+                    else:
+                        print(f"  ✓ Already enabled: {username}")
 
-                print(f"  Summary: {enabled_count} re-enabled")
+                print(f"  Summary: {enabled_count} enabled")
 
         except Exception as e:
             print(f"  ✗ Error: {str(e)}")
@@ -185,7 +190,7 @@ def student_time_control():
 
 def scheduler_loop():
     """Main scheduler loop - runs student check every 5 min, trial check every hour"""
-    print(f"[{datetime.now(WIB).strftime('%Y-%m-%d %H:%M:%S WIB')}] Scheduler started")
+    print(f"[{datetime.now(WITA).strftime('%Y-%m-%d %H:%M:%S WITA')}] Scheduler started")
     print(f"Student time control: every {STUDENT_CHECK_INTERVAL_MINUTES} minutes")
     print(f"Trial user expiration: every {TRIAL_CHECK_INTERVAL_HOURS} hour(s)")
     print("-" * 60)
@@ -201,7 +206,7 @@ def scheduler_loop():
                 expire_trial_users()
                 last_trial_check = now
         except Exception as e:
-            print(f"[{datetime.now(WIB)}] Scheduler error: {str(e)}")
+            print(f"[{datetime.now(WITA)}] Scheduler error: {str(e)}")
 
         print(f"\nNext student check in {STUDENT_CHECK_INTERVAL_MINUTES} minutes...")
         time.sleep(STUDENT_CHECK_INTERVAL_SECONDS)

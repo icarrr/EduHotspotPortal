@@ -22,6 +22,7 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>Status</th>
                         <th>User</th>
                         <th>IP Address</th>
                         <th>MAC Address</th>
@@ -34,11 +35,22 @@
                     {% for session in sessions %}
                     <tr>
                         <td>
+                            {% if session.get('logged_in') %}
+                            <span class="badge bg-success">Logged In</span>
+                            {% else %}
+                            <span class="badge bg-warning">Not Logged In</span>
+                            {% endif %}
+                        </td>
+                        <td>
                             <div class="d-flex align-items-center">
                                 <div class="avatar avatar-sm bg-success-lt me-2">
                                     <i class="ti ti-user"></i>
                                 </div>
-                                <strong>{{ session.user }}</strong>
+                                {% if session.get('logged_in') %}
+                                <strong>{{ session.get('user') }}</strong>
+                                {% else %}
+                                <span class="text-muted">{{ session['mac-address'] }}</span>
+                                {% endif %}
                             </div>
                         </td>
                         <td>
@@ -55,16 +67,20 @@
                             </div>
                         </td>
                         <td>
+                            {% if session.get('logged_in') %}
                             <a href="{{ url_for('users.disconnect', session_id=session['.id']) }}"
                                class="btn btn-sm btn-outline-danger"
                                onclick="return confirm('Disconnect {{ session.user }}?')">
                                 <i class="ti ti-logout me-1"></i>Disconnect
                             </a>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="text-center py-5">
+                        <td colspan="7" class="text-center py-5">
                             <i class="ti ti-wifi-off fs-3 text-muted mb-3"></i>
                             <p class="text-muted">No users currently online</p>
                         </td>

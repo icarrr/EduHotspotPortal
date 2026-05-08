@@ -147,6 +147,17 @@ class MikroTikClient:
             current_app.logger.error(f'Failed to get active sessions: {e}')
             return []
 
+    def get_hosts(self):
+        if not self.connection:
+            if not self.connect():
+                return []
+        try:
+            hosts = self.connection.path('ip', 'hotspot', 'host')
+            return list(hosts)
+        except (LibRouterosError, ConnectionClosed) as e:
+            current_app.logger.error(f'Failed to get hosts: {e}')
+            return []
+
     def disconnect_session(self, session_id):
         if not self.connection:
             if not self.connect():

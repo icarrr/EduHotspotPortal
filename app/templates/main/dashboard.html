@@ -131,4 +131,100 @@
         </div>
     </div>
 </div>
+
+{% if mikrotik_connected %}
+<div class="row g-3 mt-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-wifi me-2"></i>Online Sessions
+                    <span class="badge bg-success ms-2">{{ active_sessions|length }} active</span>
+                </h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('users.online_sessions') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="ti ti-list me-1"></i>View All
+                    </a>
+                    <button class="btn btn-sm btn-outline-primary ms-1" onclick="location.reload()">
+                        <i class="ti ti-refresh me-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>User</th>
+                                <th>IP Address</th>
+                                <th>MAC Address</th>
+                                <th>Uptime</th>
+                                <th>Idle Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in active_sessions %}
+                            <tr>
+                                <td>
+                                    {% if session.get('logged_in') %}
+                                    <span class="badge bg-success">Logged In</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Not Logged In</span>
+                                    {% endif %}
+                                </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm {% if session.get('logged_in') %}bg-success-lt{% else %}bg-warning-lt{% endif %} me-2">
+                                    <i class="ti ti-user"></i>
+                                </div>
+                                {% if session.get('logged_in') %}
+                                <strong>{{ session.get('user', 'N/A') }}</strong>
+                                {% else %}
+                                <span class="text-muted">{{ session['mac-address'] }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                                <td>
+                                    <code class="bg-dark-lt px-2 py-1 rounded">{{ session.address }}</code>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info-lt">{{ session['mac-address'] }}</span>
+                                </td>
+                                <td>{{ session.uptime }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="ti ti-clock me-1 text-muted"></i>
+                                        {{ session['idle-time'] }}
+                                    </div>
+                                </td>
+                            <td>
+                                {% if session.get('logged_in') %}
+                                <a href="{{ url_for('users.disconnect', session_id=session['.id']) }}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Disconnect {{ session.user }}?')">
+                                    <i class="ti ti-logout me-1"></i>Disconnect
+                                </a>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <i class="ti ti-wifi-off fs-3 text-muted mb-3"></i>
+                                    <p class="text-muted">No users currently online</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
