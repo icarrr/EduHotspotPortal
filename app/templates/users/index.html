@@ -193,7 +193,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="btn-reset-generate">
+                    <button type="submit" class="btn btn-primary" id="btn-reset-generate">
                         <i class="ti ti-key me-1"></i>Apply Generated
                     </button>
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -206,23 +206,26 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('resetPasswordModal');
     const usernameDisplay = document.getElementById('reset-username-display');
     const passwordInput = document.getElementById('reset-password-input');
     const generatedInput = document.getElementById('generated-password');
     const manualInput = document.getElementById('manual-password');
     const form = document.getElementById('reset-password-form');
+    const submitBtn = document.getElementById('btn-reset-generate');
     let currentUsername = '';
 
-    // Open modal on any reset button click
+    function setFormAction(username) {
+        form.action = '/users/reset-password/' + encodeURIComponent(username);
+    }
+
     document.querySelectorAll('.btn-reset-pwd').forEach(function(btn) {
         btn.addEventListener('click', function() {
             currentUsername = this.dataset.username;
             usernameDisplay.textContent = currentUsername;
-            form.action = '/users/reset-password/' + encodeURIComponent(currentUsername);
+            setFormAction(currentUsername);
+            manualInput.value = '';
             fetchGenerated();
-            const bsModal = new bootstrap.Modal(modal);
-            bsModal.show();
+            new bootstrap.Modal(document.getElementById('resetPasswordModal')).show();
         });
     });
 
@@ -231,29 +234,19 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(r => r.json())
             .then(data => {
                 generatedInput.value = data.password;
-                passwordInput.value = data.password;
+                submitBtn.textContent = 'Apply ' + data.password;
             })
-            .catch(() => {
-                generatedInput.value = 'Error generating';
-            });
+            .catch(() => { generatedInput.value = 'Error'; });
     }
 
     document.getElementById('btn-generate').addEventListener('click', fetchGenerated);
 
-    document.getElementById('btn-reset-generate').addEventListener('click', function() {
-        passwordInput.value = generatedInput.value;
-        form.submit();
-    });
-
     document.getElementById('btn-apply-manual').addEventListener('click', function() {
         const val = manualInput.value.trim();
-        if (val.length < 3) {
-            alert('Password must be at least 3 characters');
-            return;
-        }
-        if (!confirm('Apply password "' + val + '" for ' + currentUsername + '?')) return;
+        if (val.length < 3) { alert('Password must be at least 3 characters'); return; }
         passwordInput.value = val;
-        form.submit();
+        submitBtn.textContent = 'Apply ' + val;
+        submitBtn.click();
     });
 
     manualInput.addEventListener('keydown', function(e) {
