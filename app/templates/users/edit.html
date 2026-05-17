@@ -54,11 +54,10 @@
                             <i class="ti ti-zap me-1"></i>Quick Actions
                         </h6>
                         <div class="d-flex gap-2">
-                            <a href="{{ url_for('users.reset_password', username=user.name) }}"
-                               class="btn btn-sm btn-warning"
-                               onclick="return confirm('Reset password for {{ user.name }}?')">
+                            <button type="button" class="btn btn-sm btn-warning btn-reset-pwd"
+                                    data-username="{{ user.name }}">
                                 <i class="ti ti-key me-1"></i>Reset Password
-                            </a>
+                            </button>
                             <a href="{{ url_for('users.set_expiration', username=user.name) }}"
                                class="btn btn-sm btn-outline-warning">
                                 <i class="ti ti-clock me-1"></i>Set Expiration
@@ -78,4 +77,104 @@
         </div>
     </div>
 </div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="ti ti-key me-2"></i>Reset Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="reset-password-form" method="POST">
+                <div class="modal-body">
+                    <p class="mb-3">Reset password for <strong id="reset-username-display"></strong></p>
+                    <input type="hidden" name="password" id="reset-password-input">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Generated Password</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="generated-password" readonly>
+                            <button type="button" class="btn btn-outline-primary" id="btn-generate">
+                                <i class="ti ti-refresh me-1"></i>Generate
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-500">Or set manually</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="manual-password" placeholder="Type new password...">
+                            <button type="button" class="btn btn-outline-success" id="btn-apply-manual">
+                                <i class="ti ti-check me-1"></i>Apply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btn-reset-generate">
+                        <i class="ti ti-key me-1"></i>Apply Generated
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('resetPasswordModal');
+    const usernameDisplay = document.getElementById('reset-username-display');
+    const passwordInput = document.getElementById('reset-password-input');
+    const generatedInput = document.getElementById('generated-password');
+    const manualInput = document.getElementById('manual-password');
+    const form = document.getElementById('reset-password-form');
+    let currentUsername = '';
+
+    document.querySelectorAll('.btn-reset-pwd').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            currentUsername = this.dataset.username;
+            usernameDisplay.textContent = currentUsername;
+            form.action = '/users/reset-password/' + encodeURIComponent(currentUsername);
+            fetchGenerated();
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+        });
+    });
+
+    function fetchGenerated() {
+        fetch('/users/reset-password/' + encodeURIComponent(currentUsername))
+            .then(r => r.json())
+            .then(data => {
+                generatedInput.value = data.password;
+                passwordInput.value = data.password;
+            })
+            .catch(() => { generatedInput.value = 'Error'; });
+    }
+
+    document.getElementById('btn-generate').addEventListener('click', fetchGenerated);
+
+    document.getElementById('btn-reset-generate').addEventListener('click', function() {
+        passwordInput.value = generatedInput.value;
+        form.submit();
+    });
+
+    document.getElementById('btn-apply-manual').addEventListener('click', function() {
+        const val = manualInput.value.trim();
+        if (val.length < 3) { alert('Password must be at least 3 characters'); return; }
+        if (!confirm('Apply password "' + val + '" for ' + currentUsername + '?')) return;
+        passwordInput.value = val;
+        form.submit();
+    });
+
+    manualInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-apply-manual').click(); }
+    });
+});
+</script>
+{% endblock %}
 {% endblock %}

@@ -127,18 +127,31 @@ def bulk_delete():
     return redirect(url_for('users.index'))
 
 
-@bp.route('/reset-password/<username>')
+@bp.route('/reset-password/<username>', methods=['GET', 'POST'])
 @login_required
 @operator_required
 def reset_password(username):
-    new_password = secrets.token_urlsafe(8)
-    mikrotik = get_mikrotik_client()
-    success, message = mikrotik.reset_password(username, new_password)
-    if success:
-        flash(f'Password for {username} reset to: {new_password}', 'success')
-    else:
-        flash(f'Failed to reset password: {message}', 'danger')
-    return redirect(url_for('users.index'))
+    if request.method == 'POST':
+        new_password = request.form.get('password', '').strip()
+        if not new_password:
+            flash('Password cannot be empty', 'danger')
+            return redirect(url_for('users.index'))
+
+        mikrotik = get_mikrotik_client()
+        success, message = mikrotik.reset_password(username, new_password)
+        if success:
+            log = AuditLog(operator_id=current_user.id, action='reset',
+                          target_user=username, details='Password reset by operator')
+            db.session.add(log)
+            db.session.commit()
+            flash(f'Password for {username} has been reset', 'success')
+        else:
+            flash(f'Failed to reset password: {message}', 'danger')
+        return redirect(url_for('users.index'))
+
+    # GET: return generated password as JSON
+    new_password = secrets.token_urlsafe(6)[:8]
+    return {'password': new_password, 'username': username}
 
 
 @bp.route('/reset-counters/<username>')
