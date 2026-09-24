@@ -127,8 +127,7 @@ EduHotspotPortal/
 ├── test_mikrotik.py         # MikroTik connection test script
 ├── requirements.txt         # Python dependencies
 ├── .env.example             # Environment variable template
-├── ehp-prd.md               # Product Requirements Document
-└── AGENTS.md                # Developer/agent guidelines
+└── LICENSE                  # MIT license
 ```
 
 Key directories:
@@ -301,7 +300,7 @@ Change the port in the `app.run(...)` call in `run.py`, or run behind a reverse 
 
 ## License
 
-A license has not yet been specified.
+MIT
 
 ## Roadmap
 
